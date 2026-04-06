@@ -1,19 +1,29 @@
+<style>
+  .map { position: relative; }
+  .map-body { position: absolute; left: 50%; transform: translateX(-50%); }
+  .map-earth { bottom: 5px; }
+  .map-moon { top: 5px; }
+  .map-craft { transform: translate(-50%, -50%); }
+  .circle { border-radius: 9999px; }
+  .craft-dot { border: 2px solid black; }
+</style>
+
 <div class="layout layout--col layout--center-x gap--xsmall">
   <!-- Map area -->
-  <div class="w--full h--[140px]" style="position: relative;">
+  <div class="map w--full h--[140px]">
     <!-- Earth (bottom-center) -->
-    <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);">
-      <div class="w--7 h--7 rounded--full bg--black"></div>
+    <div class="map-body map-earth">
+      <div class="circle bg--black w--7 h--7"></div>
     </div>
 
     <!-- Moon (top-center) -->
-    <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%);">
-      <div class="w--3.5 h--3.5 rounded--full bg--black"></div>
+    <div class="map-body map-moon">
+      <div class="circle bg--black w--3.5 h--3.5"></div>
     </div>
 
     <!-- Spacecraft -->
-    <div style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; transform: translate(-50%, -50%);">
-      <div class="w--2 h--2 rounded--full bg--white border--h-1"></div>
+    <div class="map-craft" style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
+      <div class="circle craft-dot bg--white w--2 h--2"></div>
     </div>
   </div>
 

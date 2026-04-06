@@ -1,22 +1,36 @@
+<style>
+  .map { position: relative; }
+  .map-body { position: absolute; left: 50%; transform: translateX(-50%); }
+  .map-body-label { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+  .map-earth { bottom: 10px; }
+  .map-earth-label { top: -16px; }
+  .map-moon { top: 10px; }
+  .map-moon-label { bottom: -16px; }
+  .map-craft { transform: translate(-50%, -50%); }
+  .map-craft-label { position: absolute; left: 16px; top: -4px; white-space: nowrap; }
+  .circle { border-radius: 9999px; }
+  .craft-dot { border: 2px solid black; }
+</style>
+
 <div class="layout layout--col layout--center-x gap--small">
   <!-- Map area -->
-  <div class="w--full h--[280px]" style="position: relative;">
+  <div class="map w--full h--[280px]">
     <!-- Earth (bottom-center) -->
-    <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);">
-      <div class="w--10 h--10 rounded--full bg--black"></div>
-      <span class="label label--small" style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
+    <div class="map-body map-earth">
+      <div class="circle bg--black w--10 h--10"></div>
+      <span class="label label--small map-body-label map-earth-label">Earth</span>
     </div>
 
     <!-- Moon (top-center) -->
-    <div style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%);">
-      <div class="w--5 h--5 rounded--full bg--black"></div>
-      <span class="label label--small" style="position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
+    <div class="map-body map-moon">
+      <div class="circle bg--black w--5 h--5"></div>
+      <span class="label label--small map-body-label map-moon-label">Moon</span>
     </div>
 
     <!-- Spacecraft -->
-    <div style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; transform: translate(-50%, -50%);">
-      <div class="w--2.5 h--2.5 rounded--full bg--white border--h-1"></div>
-      <span class="label label--small" style="position: absolute; left: 16px; top: -4px; white-space: nowrap;">Orion</span>
+    <div class="map-craft" style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
+      <div class="circle craft-dot bg--white w--2.5 h--2.5"></div>
+      <span class="label label--small map-craft-label">Orion</span>
     </div>
   </div>
 
