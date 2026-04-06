@@ -1,19 +1,19 @@
 <div class="layout layout--col layout--center-x gap--xsmall">
   <!-- Map area -->
-  <div style="position: relative; width: 100%; height: 140px;">
+  <div class="w--full h--[140px]" style="position: relative;">
     <!-- Earth (bottom-center) -->
     <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);">
-      <div style="width: 28px; height: 28px; border-radius: 9999px; background: black;"></div>
+      <div class="w--7 h--7 rounded--full bg--black"></div>
     </div>
 
     <!-- Moon (top-center) -->
     <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%);">
-      <div style="width: 14px; height: 14px; border-radius: 9999px; background: black;"></div>
+      <div class="w--3.5 h--3.5 rounded--full bg--black"></div>
     </div>
 
     <!-- Spacecraft -->
     <div style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; transform: translate(-50%, -50%);">
-      <div style="width: 8px; height: 8px; border-radius: 9999px; border: 2px solid black; background: white;"></div>
+      <div class="w--2 h--2 rounded--full bg--white border--h-1"></div>
     </div>
   </div>
 
