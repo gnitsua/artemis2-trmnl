@@ -1,12 +1,6 @@
 <style>
   .map { position: relative; }
-  .map-body { position: absolute; left: 50%; transform: translateX(-50%); }
-  .map-body-label { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
-  .map-earth { bottom: 50px; }
-  .map-earth-label { top: -18px; }
-  .map-moon { top: 40px; }
-  .map-moon-label { bottom: -18px; }
-  .map-craft { transform: translate(-50%, -50%); }
+  .map-craft { position: absolute; transform: translate(-50%, -50%); }
   .map-craft-label { position: absolute; left: 20px; top: -4px; white-space: nowrap; }
   .circle { border-radius: 9999px; }
   .craft-dot { border: 3px solid black; }
@@ -14,23 +8,23 @@
 
 <div class="layout layout--row gap--medium">
   <!-- LEFT: 2D trajectory map -->
-  <div class="map w--[420px] h--full">
-    <!-- Earth (bottom-center) -->
-    <div class="map-body map-earth">
-      <div class="circle bg--black w--16 h--16"></div>
-      <span class="label label--small map-body-label map-earth-label">Earth</span>
-    </div>
-
-    <!-- Moon (top-center) -->
-    <div class="map-body map-moon">
+  <div class="map flex flex--col flex--center-x flex--between w--[420px] h--full py--large">
+    <!-- Moon (top) -->
+    <div class="flex flex--col flex--center-x gap--xsmall">
       <div class="circle bg--black w--8 h--8"></div>
-      <span class="label label--small map-body-label map-moon-label">Moon</span>
+      <span class="label label--small">Moon</span>
     </div>
 
-    <!-- Spacecraft -->
-    <div class="map-craft" style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
+    <!-- Spacecraft (only element needing absolute positioning) -->
+    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
       <div class="circle craft-dot bg--white w--3 h--3"></div>
       <span class="label label--small map-craft-label">Orion</span>
+    </div>
+
+    <!-- Earth (bottom) -->
+    <div class="flex flex--col flex--center-x gap--xsmall">
+      <span class="label label--small">Earth</span>
+      <div class="circle bg--black w--16 h--16"></div>
     </div>
   </div>
 

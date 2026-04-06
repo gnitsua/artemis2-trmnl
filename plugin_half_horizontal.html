@@ -1,12 +1,6 @@
 <style>
   .map { position: relative; }
-  .map-body { position: absolute; left: 50%; transform: translateX(-50%); }
-  .map-body-label { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
-  .map-earth { bottom: 15px; }
-  .map-earth-label { top: -16px; }
-  .map-moon { top: 15px; }
-  .map-moon-label { bottom: -16px; }
-  .map-craft { transform: translate(-50%, -50%); }
+  .map-craft { position: absolute; transform: translate(-50%, -50%); }
   .map-craft-label { position: absolute; left: 16px; top: -4px; white-space: nowrap; }
   .circle { border-radius: 9999px; }
   .craft-dot { border: 2px solid black; }
@@ -14,23 +8,23 @@
 
 <div class="layout layout--row gap--medium">
   <!-- LEFT: Map area -->
-  <div class="map w--[300px] h--full">
-    <!-- Earth (bottom-center) -->
-    <div class="map-body map-earth">
-      <div class="circle bg--black w--9 h--9"></div>
-      <span class="label label--small map-body-label map-earth-label">Earth</span>
-    </div>
-
-    <!-- Moon (top-center) -->
-    <div class="map-body map-moon">
+  <div class="map flex flex--col flex--center-x flex--between w--[300px] h--full py--small">
+    <!-- Moon (top) -->
+    <div class="flex flex--col flex--center-x gap--xsmall">
       <div class="circle bg--black w--5 h--5"></div>
-      <span class="label label--small map-body-label map-moon-label">Moon</span>
+      <span class="label label--small">Moon</span>
     </div>
 
     <!-- Spacecraft -->
-    <div class="map-craft" style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
+    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
       <div class="circle craft-dot bg--white w--2.5 h--2.5"></div>
       <span class="label label--small map-craft-label">Orion</span>
+    </div>
+
+    <!-- Earth (bottom) -->
+    <div class="flex flex--col flex--center-x gap--xsmall">
+      <span class="label label--small">Earth</span>
+      <div class="circle bg--black w--9 h--9"></div>
     </div>
   </div>
 
