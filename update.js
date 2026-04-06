@@ -155,9 +155,9 @@ async function main() {
   const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
   const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
 
-  // Heading: 0=toward moon, CSS rotation needs adjustment since
-  // the capsule shape points up by default, and screen Y is inverted
-  const craftHeadingDeg = -craftProj.headingDeg;
+  // Capsule narrow end points down by default. Rotate so it points
+  // in the direction of travel. 0=toward moon (up on screen) needs 180° flip.
+  const craftHeadingDeg = 180 - craftProj.headingDeg;
 
   const mergeVars = {
     craft_x_pct: craftXPct,
