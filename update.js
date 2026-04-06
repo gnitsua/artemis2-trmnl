@@ -126,23 +126,17 @@ async function main() {
     Math.min(100, Math.round((distEarth / earthMoonDist) * 100)),
   );
 
-  // 2D projection for map placement
+  // 2D projection: Earth-Moon axis = vertical, perpendicular = horizontal
   const craftProj = projectToPlane(craft, moon);
   const moonU = magnitude(moon);
   const craftMap = toMapCoords(craftProj.u, craftProj.v, moonU);
-  const moonMap = toMapCoords(moonU, 0, moonU);
 
-  // Convert to percentages for the template
   const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
   const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
-  const moonXPct = Math.round((moonMap.mapX / MAP_W) * 100);
-  const moonYPct = Math.round((moonMap.mapY / MAP_H) * 100);
 
   const mergeVars = {
     craft_x_pct: craftXPct,
     craft_y_pct: craftYPct,
-    moon_x_pct: moonXPct,
-    moon_y_pct: moonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),
