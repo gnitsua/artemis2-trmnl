@@ -2,6 +2,9 @@
   .map { position: relative; height: 140px; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); }
   .circle { border-radius: 9999px; }
+  .capsule-wrap {
+    filter: drop-shadow(0 0 0 white) drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white) drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white);
+  }
   .capsule {
     width: 10px;
     height: 10px;
@@ -18,7 +21,7 @@
 
     <!-- Spacecraft -->
     <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; rotate: {{ craft_heading_deg }}deg;">
-      <div class="capsule"></div>
+      <div class="capsule-wrap"><div class="capsule"></div></div>
     </div>
 
     <!-- Earth (bottom) -->
