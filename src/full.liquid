@@ -50,22 +50,22 @@
 
   <!-- RIGHT: Mission stats -->
   <div class="flex flex--col flex--center-y gap--medium grow">
-    <span class="title title--large">Artemis II</span>
+    <span class="title title--large lg:title--xxlarge">Artemis II</span>
 
     <div class="flex flex--col gap--small">
-      <span class="label label--gray">Distance from Earth</span>
-      <span class="value value--large">{{ distance_earth_km }}</span>
-      <span class="label label--small">km</span>
+      <span class="label label--base lg:label--xlarge">Distance from Earth</span>
+      <span class="value value--large lg:value--xxlarge">{{ distance_earth_km }}</span>
+      <span class="label label--small lg:label--large">km</span>
     </div>
 
     <div class="divider"></div>
 
     <div class="flex flex--col gap--small">
-      <span class="label label--gray">Distance from Moon</span>
-      <span class="value value--large">{{ distance_moon_km }}</span>
-      <span class="label label--small">km</span>
+      <span class="label label--base lg:label--xlarge">Distance from Moon</span>
+      <span class="value value--large lg:value--xxlarge">{{ distance_moon_km }}</span>
+      <span class="label label--small lg:label--large">km</span>
     </div>
 
-    <span class="label label--small label--gray">{{ updated_at }}</span>
+    <span class="label label--small label--inverted">{{ updated_at }}</span>
   </div>
 </div>
