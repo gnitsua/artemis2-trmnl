@@ -169,6 +169,7 @@
     </div>
   </div>
 
+  <script src="test_frames.js"></script>
   <script>
     let frames = [];
     let currentFrame = 0;
@@ -178,9 +179,8 @@
     const trailDots = [];
     const MAX_TRAIL = 80;
 
-    async function loadFrames() {
-      const resp = await fetch("test_frames.json");
-      frames = await resp.json();
+    function loadFrames() {
+      frames = TEST_FRAMES;
       document.getElementById("scrubber").max = frames.length - 1;
       render(0);
     }

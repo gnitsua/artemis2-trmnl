@@ -15,17 +15,18 @@ function parseEphemeris(filename) {
     .map((l) => l.trim())
     .filter(Boolean);
   const points = [];
-  for (let i = 1; i < lines.length - 1; i += 3) {
-    const parse = (line, labels) => {
-      const v = {};
-      for (const l of labels) {
-        const m = line.match(new RegExp(l + "\\s*=\\s*([\\d.eE+-]+)"));
-        if (m) v[l] = parseFloat(m[1]);
-      }
-      return v;
-    };
-    const pos = parse(lines[i], ["X", "Y", "Z"]);
-    const vel = parse(lines[i + 1], ["VX", "VY", "VZ"]);
+  const parse = (line, labels) => {
+    const v = {};
+    for (const l of labels) {
+      const m = line.match(new RegExp(l + "\\s*=\\s*([\\d.eE+-]+)"));
+      if (m) v[l] = parseFloat(m[1]);
+    }
+    return v;
+  };
+  // Each entry: date line, X/Y/Z line, VX/VY/VZ line, LT/RG/RR line = 4 lines
+  for (let i = 1; i < lines.length - 1; i += 4) {
+    const pos = parse(lines[i + 1], ["X", "Y", "Z"]);
+    const vel = parse(lines[i + 2], ["VX", "VY", "VZ"]);
     if (pos.X !== undefined) {
       points.push({
         x: pos.X,
