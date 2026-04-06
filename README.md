@@ -2,7 +2,8 @@
 
 Tracks the Artemis II spacecraft position on a [TRMNL](https://usetrmnl.com) e-ink display. Shows a 2D map with Earth, Moon, and Orion's current position projected onto the Earth-Moon plane, plus distance stats.
 
-<img width="660" height="395" alt="image" src="https://github.com/user-attachments/assets/bca19a89-f9cf-4cf5-8513-0e402b907e78" />
+<img width="660" height="395" alt="image" src="https://github.com/user-attachments/assets/eddb9cf2-534e-4f6d-a1c1-2b64b3f69675" />
+
 
 
 ## How it works
