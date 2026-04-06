@@ -83,30 +83,121 @@ function toMapCoords(u, v, maxU) {
   };
 }
 
-const craftPoints = parseEphemeris("craft_ephemeris.txt");
-const moonPoints = parseEphemeris("moon_ephemeris.txt");
+const HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api";
+const MIN_SEP = 6;
 
-// Moon starts at April 1 01:00, craft at April 2 02:00 = 300 intervals offset (5min each)
-const moonOffset = 300;
+function buildHorizonsUrl(command, start, end, step) {
+  const params = new URLSearchParams({
+    format: "json",
+    COMMAND: `'${command}'`,
+    OBJ_DATA: "'NO'",
+    MAKE_EPHEM: "'YES'",
+    EPHEM_TYPE: "'VECTORS'",
+    CENTER: "'500@399'",
+    START_TIME: `'${start}'`,
+    STOP_TIME: `'${end}'`,
+    STEP_SIZE: `'${step}'`,
+  });
+  return `${HORIZONS_API}?${params}`;
+}
 
-const frames = [];
-for (let i = 0; i < craftPoints.length; i++) {
-  const moonIdx = i + moonOffset;
-  if (moonIdx >= moonPoints.length) break;
+function parseAllVectors(resultText) {
+  const soeIdx = resultText.indexOf("$$SOE");
+  const eoeIdx = resultText.indexOf("$$EOE");
+  if (soeIdx === -1 || eoeIdx === -1) return [];
+  const dataBlock = resultText.slice(soeIdx + 5, eoeIdx).trim();
+  const lines = dataBlock
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const parseValues = (line, labels) => {
+    const vals = {};
+    for (const label of labels) {
+      const m = line.match(new RegExp(`${label}\\s*=\\s*([\\d.eE+-]+)`));
+      if (m) vals[label] = parseFloat(m[1]);
+    }
+    return vals;
+  };
+  const points = [];
+  for (let i = 0; i < lines.length; i += 4) {
+    if (i + 2 >= lines.length) break;
+    const pos = parseValues(lines[i + 1], ["X", "Y", "Z"]);
+    const vel = parseValues(lines[i + 2], ["VX", "VY", "VZ"]);
+    if (pos.X !== undefined) {
+      points.push({
+        x: pos.X,
+        y: pos.Y,
+        z: pos.Z,
+        vx: vel.VX,
+        vy: vel.VY,
+        vz: vel.VZ,
+      });
+    }
+  }
+  return points;
+}
 
-  const craft = craftPoints[i];
-  const moon = moonPoints[moonIdx];
+function separateFromMoon(xPct, yPct, moonYPct) {
+  const moonXPct = 50;
+  const dx = xPct - moonXPct;
+  const dy = yPct - moonYPct;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < MIN_SEP && dist > 0) {
+    const scale = MIN_SEP / dist;
+    return {
+      x: Math.round(moonXPct + dx * scale),
+      y: Math.round(moonYPct + dy * scale),
+    };
+  }
+  if (dist === 0) {
+    return { x: Math.round(xPct), y: Math.round(yPct + MIN_SEP) };
+  }
+  return { x: Math.round(xPct), y: Math.round(yPct) };
+}
 
+async function main() {
+  const start = "2026-04-02 02:00";
+  const end = new Date().toISOString().slice(0, 19);
+
+  console.log(`Fetching from ${start} to ${end} at 1h steps...`);
+  const [craftResp, moonResp] = await Promise.all([
+    fetch(buildHorizonsUrl("-1024", start, end, "1h")).then((r) => r.json()),
+    fetch(buildHorizonsUrl("301", start, end, "1h")).then((r) => r.json()),
+  ]);
+
+  const craftPoints = parseAllVectors(craftResp.result);
+  const moonPoints = parseAllVectors(moonResp.result);
+  const count = Math.min(craftPoints.length, moonPoints.length);
+
+  if (count === 0) {
+    console.error("No data returned");
+    process.exit(1);
+  }
+
+  // Compute all trail points
+  const trail = [];
+  for (let i = 0; i < count; i++) {
+    const c = craftPoints[i];
+    const m = moonPoints[i];
+    const proj = projectToPlane(c, { vx: c.vx, vy: c.vy, vz: c.vz }, m);
+    const mu = magnitude(m);
+    const maxU = Math.max(mu, proj.u) * 0.95;
+    const coords = toMapCoords(proj.u, proj.v, maxU);
+    const mCoords = toMapCoords(mu, 0, maxU);
+    const rawX = (coords.mapX / MAP_W) * 100;
+    const rawY = (coords.mapY / MAP_H) * 100;
+    const mY = (mCoords.mapY / MAP_H) * 100;
+    const sep = separateFromMoon(rawX, rawY, mY);
+    trail.push({ x: sep.x, y: sep.y });
+  }
+
+  // Use last point as current position
+  const craft = craftPoints[count - 1];
+  const moon = moonPoints[count - 1];
   const distEarth = magnitude(craft);
   const distMoon = distance(craft, moon);
   const earthMoonDist = magnitude(moon);
   const speedKms = Math.sqrt(craft.vx ** 2 + craft.vy ** 2 + craft.vz ** 2);
-  const speedKmh = Math.round(speedKms * 3600);
-  const progress = Math.max(
-    1,
-    Math.min(100, Math.round((distEarth / earthMoonDist) * 100)),
-  );
-
   const craftProj = projectToPlane(
     craft,
     { vx: craft.vx, vy: craft.vy, vz: craft.vz },
@@ -116,25 +207,37 @@ for (let i = 0; i < craftPoints.length; i++) {
   const maxU = Math.max(moonU, craftProj.u) * 0.95;
   const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
   const moonMap = toMapCoords(moonU, 0, maxU);
-
-  const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
-  const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
+  const rawX = (craftMap.mapX / MAP_W) * 100;
+  const rawY = (craftMap.mapY / MAP_H) * 100;
   const moonYPct = Math.round((moonMap.mapY / MAP_H) * 100);
+  const craftSep = separateFromMoon(rawX, rawY, moonYPct);
   const craftHeadingDeg = 180 - craftProj.headingDeg;
 
-  frames.push({
-    craft_x_pct: craftXPct,
-    craft_y_pct: craftYPct,
+  const mergeVars = {
+    craft_x_pct: craftSep.x,
+    craft_y_pct: craftSep.y,
     craft_heading_deg: craftHeadingDeg,
     moon_y_pct: moonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
-    speed_kmh: speedKmh.toLocaleString("en-US"),
-    progress,
-    hours_elapsed: ((i * 5) / 60).toFixed(1),
-  });
+    speed_kmh: Math.round(speedKms * 3600).toLocaleString("en-US"),
+    progress: Math.max(
+      1,
+      Math.min(100, Math.round((distEarth / earthMoonDist) * 100)),
+    ),
+    updated_at:
+      new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
+    trail,
+  };
+
+  const outPath = join(__dirname, "data", "position.json");
+  writeFileSync(outPath, JSON.stringify(mergeVars, null, 2) + "\n");
+  console.log(
+    `Wrote ${trail.length} trail points (1h intervals since April 2) to ${outPath}`,
+  );
 }
 
-const outPath = join(__dirname, "test_frames.json");
-writeFileSync(outPath, JSON.stringify(frames));
-console.log(`Generated ${frames.length} frames to test_frames.json`);
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

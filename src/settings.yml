@@ -1,17 +1,15 @@
-- keyname: polling_url
-  name: Position Data URL
-  field_type: text
-  description: URL to the position.json file
-  value: https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.json
+strategy: polling
+polling_url: http://host.docker.internal:8080/data/position.json
 
-- keyname: author_bio
-  name: About This Plugin
-  category: science,news
-  field_type: author_bio
-  description: Tracks the Artemis II spacecraft position using data from NASA's JPL Horizons API. Updated every 15 minutes via GitHub Actions.
-  github_url: https://github.com/gnitsua/artemis2-trmnl
+custom_fields:
+  - keyname: author_bio
+    name: About This Plugin
+    category: science,news
+    field_type: author_bio
+    description: Tracks the Artemis II spacecraft position using data from NASA's JPL Horizons API. Updated every 15 minutes via GitHub Actions.
+    github_url: https://github.com/gnitsua/artemis2-trmnl
 
-- keyname: plugin_description
-  name: Artemis II Tracker
-  field_type: description
-  description: Shows Orion's real-time position between Earth and the Moon, with distance stats. Data sourced from NASA JPL Horizons.
+  - keyname: plugin_description
+    name: Artemis II Tracker
+    field_type: description
+    description: Shows Orion's real-time position between Earth and the Moon, with distance stats. Data sourced from NASA JPL Horizons.

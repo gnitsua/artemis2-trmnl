@@ -7,8 +7,8 @@ Tracks the Artemis II spacecraft position on a [TRMNL](https://usetrmnl.com) e-i
 ## How it works
 
 1. A GitHub Actions cron job runs `update.js` every 15 minutes
-2. `update.js` fetches Artemis II and Moon positions from the [JPL Horizons API](https://ssd.jpl.nasa.gov/horizons/)
-3. It projects the 3D ECI coordinates onto the Earth-Moon plane and computes distances
+2. `update.js` fetches the last 24 hours of Artemis II and Moon positions from the [JPL Horizons API](https://ssd.jpl.nasa.gov/horizons/) at 15-minute intervals
+3. It projects the 3D ECI coordinates onto the Earth-Moon plane, computes distances, and generates a trail
 4. It writes the result to `data/position.json` and commits it to the repo
 5. TRMNL polls the raw GitHub URL for the JSON and renders the plugin template as a PNG
 
@@ -20,30 +20,46 @@ https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.
 
 ## Layouts
 
-| File                          | TRMNL Layout    | Size    | Description                          |
-| ----------------------------- | --------------- | ------- | ------------------------------------ |
-| `plugin.html`                 | Full            | 800x480 | Side-by-side map and stats           |
-| `plugin_half_vertical.html`   | Half Vertical   | 400x480 | Stacked map with compact stats below |
-| `plugin_half_horizontal.html` | Half Horizontal | 800x240 | Side-by-side map and stats, compact  |
-| `plugin_quadrant.html`        | Quadrant        | 400x240 | Minimal map with small stats         |
+| Liquid Template              | TRMNL Layout    | Size    | Description                          |
+| ---------------------------- | --------------- | ------- | ------------------------------------ |
+| `src/full.liquid`            | Full            | 800x480 | Side-by-side map and stats           |
+| `src/half_vertical.liquid`   | Half Vertical   | 400x480 | Stacked map with compact stats below |
+| `src/half_horizontal.liquid` | Half Horizontal | 800x240 | Side-by-side map and stats, compact  |
+| `src/quadrant.liquid`        | Quadrant        | 400x240 | Minimal map with small stats         |
 
-## Browser version
+Legacy HTML templates (`plugin*.html`) are also included for the TRMNL markup editor.
 
-Open `index.html` in a browser to see a live web version. It fetches position data from the GitHub-hosted `data/position.json` and refreshes every 60 seconds.
+## Local development
 
-## Testing
+Preview all layouts locally using [trmnlp](https://github.com/usetrmnl/trmnlp):
 
-Open `test.html` in a browser to play back the full mission trajectory. It includes 1849 pre-computed frames (5-minute intervals) covering ~154 hours from TLI to return. Features:
+```bash
+# Start a local HTTP server to serve position data (in a separate terminal)
+python3 -m http.server 8080
 
-- **Play/Pause** with 1x, 5x, 20x, 60x speed controls
-- **Scrubber** to jump to any point in the mission
-- **Trail dots** showing the recent flight path
+# Start the trmnlp dev server
+./bin/dev
+```
 
-To regenerate test data from JPL Horizons ephemeris files:
+Then open http://localhost:4567. Use the layout tabs (Full, Half Horizontal, Half Vertical, Quadrant) to preview each view. Click **Poll** to fetch the latest position data.
+
+The trmnlp server renders the Liquid templates in `src/` with data from the polling URL configured in `src/settings.yml`. For local development this points to `http://host.docker.internal:8080/data/position.json`.
+
+To update position data locally:
+
+```bash
+node update.js
+```
+
+### Regenerating test trajectory data
+
+The full mission trajectory (from ephemeris files) can be regenerated for testing:
 
 ```bash
 node generate_test_data.js
 ```
+
+This produces `test_frames.json` with 1849 frames covering ~154 hours from TLI to return.
 
 ## Setup
 
@@ -51,8 +67,7 @@ node generate_test_data.js
 
 1. Go to [usetrmnl.com](https://usetrmnl.com) and create a private plugin
 2. Set the polling URL to the raw `data/position.json` URL above
-3. Paste `plugin.html` into the full-screen markup editor
-4. Paste `plugin_half_vertical.html` into the half vertical markup editor
+3. Paste the contents of each `plugin*.html` file into the corresponding markup editor
 
 ### 2. Fork and enable Actions
 
@@ -67,4 +82,4 @@ Position vectors come from [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) us
 - **`-1024`** — Artemis II / Orion spacecraft
 - **`301`** — Moon
 
-Both queried relative to Earth center (`500@399`). The 3D positions are projected onto the Earth-Moon plane for 2D display, with Earth fixed at the bottom and Moon at the top.
+Both queried relative to Earth center (`500@399`). The 3D positions are projected onto the Earth-Moon plane for 2D display, with Earth fixed at the bottom and Moon positioned dynamically on the same vertical scale. A minimum separation is enforced so the capsule doesn't visually overlap the Moon during close approach.

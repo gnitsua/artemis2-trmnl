@@ -184,7 +184,7 @@ async function main() {
 
   // Enforce minimum separation from Moon (in percentage points)
   // Prevents capsule from visually overlapping the Moon circle
-  const MIN_SEP = 6; // ~24px on a 400px display
+  const MIN_SEP = 8; // ~32px on a 400px display
   function separateFromMoon(xPct, yPct) {
     const dx = xPct - moonXPct;
     const dy = yPct - moonYPct;
