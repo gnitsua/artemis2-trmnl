@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,10 +13,7 @@ const MAP_W = 420;
 const MAP_H = 480;
 const PADDING = 90;
 
-function buildHorizonsUrl(command) {
-  const now = new Date();
-  const start = now.toISOString().slice(0, 19);
-  const end = new Date(now.getTime() + 5 * 60_000).toISOString().slice(0, 19);
+function buildHorizonsUrl(command, start, end, step) {
   const params = new URLSearchParams({
     format: "json",
     COMMAND: `'${command}'`,
@@ -26,15 +23,15 @@ function buildHorizonsUrl(command) {
     CENTER: "'500@399'",
     START_TIME: `'${start}'`,
     STOP_TIME: `'${end}'`,
-    STEP_SIZE: "'5m'",
+    STEP_SIZE: `'${step}'`,
   });
   return `${HORIZONS_API}?${params}`;
 }
 
-function parseVectors(resultText) {
+function parseAllVectors(resultText) {
   const soeIdx = resultText.indexOf("$$SOE");
   const eoeIdx = resultText.indexOf("$$EOE");
-  if (soeIdx === -1 || eoeIdx === -1) return null;
+  if (soeIdx === -1 || eoeIdx === -1) return [];
 
   const dataBlock = resultText.slice(soeIdx + 5, eoeIdx).trim();
   const lines = dataBlock
@@ -42,9 +39,6 @@ function parseVectors(resultText) {
     .map((l) => l.trim())
     .filter(Boolean);
 
-  // Line 0: JDTDB, CalendarDate
-  // Line 1: X= ... Y= ... Z= ...
-  // Line 2: VX= ... VY= ... VZ= ...
   const parseValues = (line, labels) => {
     const vals = {};
     for (const label of labels) {
@@ -54,10 +48,24 @@ function parseVectors(resultText) {
     return vals;
   };
 
-  const pos = parseValues(lines[1], ["X", "Y", "Z"]);
-  const vel = parseValues(lines[2], ["VX", "VY", "VZ"]);
-
-  return { x: pos.X, y: pos.Y, z: pos.Z, vx: vel.VX, vy: vel.VY, vz: vel.VZ };
+  const points = [];
+  // Each entry: date line, X/Y/Z line, VX/VY/VZ line, LT/RG/RR line = 4 lines
+  for (let i = 0; i < lines.length; i += 4) {
+    if (i + 2 >= lines.length) break;
+    const pos = parseValues(lines[i + 1], ["X", "Y", "Z"]);
+    const vel = parseValues(lines[i + 2], ["VX", "VY", "VZ"]);
+    if (pos.X !== undefined) {
+      points.push({
+        x: pos.X,
+        y: pos.Y,
+        z: pos.Z,
+        vx: vel.VX,
+        vy: vel.VY,
+        vz: vel.VZ,
+      });
+    }
+  }
+  return points;
 }
 
 function magnitude(v) {
@@ -81,9 +89,9 @@ function projectToPlane(pos, vel, moon) {
   const perpZ = pos.z - u * e1.z;
   const perpMag = Math.sqrt(perpX ** 2 + perpY ** 2 + perpZ ** 2);
 
-  // Sign via cross product
+  // Sign via cross product (negated to match visual convention: left of Moon = negative x)
   const cross = e1.x * perpY - e1.y * perpX;
-  const v = cross >= 0 ? perpMag : -perpMag;
+  const v = cross >= 0 ? -perpMag : perpMag;
 
   // Project velocity onto same 2D plane for heading
   const vu = vel.vx * e1.x + vel.vy * e1.y + vel.vz * e1.z;
@@ -93,7 +101,7 @@ function projectToPlane(pos, vel, moon) {
     vPerpX ** 2 + vPerpY ** 2 + (vel.vz - vu * e1.z) ** 2,
   );
   const vCross = e1.x * vPerpY - e1.y * vPerpX;
-  const vv = vCross >= 0 ? vPerpMag : -vPerpMag;
+  const vv = vCross >= 0 ? -vPerpMag : vPerpMag;
 
   // Heading in degrees: 0 = toward moon (up), 90 = right, 180 = toward earth (down)
   // On screen: +u is up (toward moon), +v is right
@@ -103,35 +111,51 @@ function projectToPlane(pos, vel, moon) {
   return { u, v, headingDeg };
 }
 
-function toMapCoords(u, v, moonU) {
-  const scale = (MAP_H - 2 * PADDING) / moonU;
-  const mapY = MAP_H - PADDING - (u / moonU) * (MAP_H - 2 * PADDING);
-  const mapX = MAP_W / 2 + v * scale;
+function toMapCoords(u, v, maxU) {
+  // Use the same km-per-percent ratio for both axes
+  // Vertical: usable range = MAP_H - 2*PADDING, percentage base = MAP_H
+  // Horizontal: scale to match so 1% horizontal = same km as 1% vertical
+  const vertRange = MAP_H - 2 * PADDING;
+  const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
+  // Scale v so that percentages of MAP_W match percentages of MAP_H in real km
+  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W);
   return {
     mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
     mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),
   };
 }
 
-async function fetchPosition(command) {
-  const url = buildHorizonsUrl(command);
-  const resp = await fetch(url);
-  const data = await resp.json();
-  return parseVectors(data.result);
+async function fetchTrail(craftId, moonId) {
+  const now = new Date();
+  const past = new Date(now.getTime() - 96 * 15 * 60_000); // 96 * 15min ago
+  const start = past.toISOString().slice(0, 19);
+  const end = now.toISOString().slice(0, 19);
+
+  console.log(`Fetching trail from ${start} to ${end} at 15m steps...`);
+  const [craftResp, moonResp] = await Promise.all([
+    fetch(buildHorizonsUrl(craftId, start, end, "15m")).then((r) => r.json()),
+    fetch(buildHorizonsUrl(moonId, start, end, "15m")).then((r) => r.json()),
+  ]);
+
+  const craftPoints = parseAllVectors(craftResp.result);
+  const moonPoints = parseAllVectors(moonResp.result);
+  return { craftPoints, moonPoints };
 }
 
 async function main() {
   console.log("Fetching positions from JPL Horizons...");
 
-  const [craft, moon] = await Promise.all([
-    fetchPosition(ARTEMIS_ID),
-    fetchPosition(MOON_ID),
-  ]);
+  const { craftPoints, moonPoints } = await fetchTrail(ARTEMIS_ID, MOON_ID);
+  const count = Math.min(craftPoints.length, moonPoints.length);
 
-  if (!craft || !moon) {
+  if (count === 0) {
     console.error("Failed to parse Horizons data");
     process.exit(1);
   }
+
+  // Use the last point as current position
+  const craft = craftPoints[count - 1];
+  const moon = moonPoints[count - 1];
 
   const distEarth = magnitude(craft);
   const distMoon = distance(craft, moon);
@@ -143,49 +167,57 @@ async function main() {
     Math.min(100, Math.round((distEarth / earthMoonDist) * 100)),
   );
 
-  // 2D projection: Earth-Moon axis = vertical, perpendicular = horizontal
+  // 2D projection for current position
   const craftProj = projectToPlane(
     craft,
     { vx: craft.vx, vy: craft.vy, vz: craft.vz },
     moon,
   );
   const moonU = magnitude(moon);
-  const craftMap = toMapCoords(craftProj.u, craftProj.v, moonU);
+  const maxU = Math.max(moonU, craftProj.u) * 1.25;
+  const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
+  const moonMap = toMapCoords(moonU, 0, maxU);
 
   const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
   const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
-
-  // Capsule narrow end points down by default. Rotate so it points
-  // in the direction of travel. 0=toward moon (up on screen) needs 180° flip.
+  const moonYPct = Math.round((moonMap.mapY / MAP_H) * 100);
   const craftHeadingDeg = 180 - craftProj.headingDeg;
+
+  // Compute trail from all fetched points using the same scale
+  const trail = [];
+  for (let i = 0; i < count; i++) {
+    const c = craftPoints[i];
+    const m = moonPoints[i];
+    const proj = projectToPlane(c, { vx: c.vx, vy: c.vy, vz: c.vz }, m);
+    const mu = magnitude(m);
+    const mu2 = Math.max(mu, proj.u) * 1.25;
+    const coords = toMapCoords(proj.u, proj.v, mu2);
+    trail.push({
+      x: Math.round((coords.mapX / MAP_W) * 100),
+      y: Math.round((coords.mapY / MAP_H) * 100),
+    });
+  }
 
   const mergeVars = {
     craft_x_pct: craftXPct,
     craft_y_pct: craftYPct,
     craft_heading_deg: craftHeadingDeg,
+    moon_y_pct: moonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),
     progress,
     updated_at:
       new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
+    trail,
   };
 
-  // Load existing trail and append current position (max 96 = 24h at 15min)
   const outPath = join(__dirname, "data", "position.json");
-  let trail = [];
-  try {
-    const existing = JSON.parse(readFileSync(outPath, "utf8"));
-    trail = existing.trail || [];
-  } catch {}
-  trail.push({ x: craftXPct, y: craftYPct });
-  if (trail.length > 96) trail = trail.slice(-96);
-
-  mergeVars.trail = trail;
-
   writeFileSync(outPath, JSON.stringify(mergeVars, null, 2) + "\n");
   console.log("Wrote", outPath);
-  console.log(JSON.stringify(mergeVars, null, 2));
+  console.log(
+    `${count} trail points, craft:(${craftXPct},${craftYPct}) moon_y:${moonYPct} heading:${craftHeadingDeg}`,
+  );
 }
 
 main().catch((err) => {

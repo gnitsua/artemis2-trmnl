@@ -55,17 +55,18 @@
     .map {
       position: relative;
       width: 420px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 0;
+      height: 100%;
     }
-    .body-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+    .map-body {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .map-earth {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
     }
     .body-label { font-size: 13px; color: #666; }
     .circle { border-radius: 9999px; background: black; }
@@ -137,18 +138,21 @@
 
   <div class="screen">
     <div class="map" id="map">
-      <div class="body-group">
+      <!-- Moon (dynamic y) -->
+      <div class="map-body" id="moon-body">
         <div class="circle moon"></div>
-        <span class="body-label">Moon</span>
+        <span class="body-label" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
       </div>
 
+      <!-- Spacecraft -->
       <div class="map-craft" id="spacecraft">
         <div class="capsule-wrap" id="capsule-wrap"><div class="capsule"></div></div>
       </div>
 
-      <div class="body-group">
-        <span class="body-label">Earth</span>
+      <!-- Earth (fixed bottom) -->
+      <div class="map-earth">
         <div class="circle earth"></div>
+        <span class="body-label" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
       </div>
     </div>
 
@@ -194,6 +198,7 @@
       sc.style.top = f.craft_y_pct + "%";
       document.getElementById("capsule-wrap").style.rotate = f.craft_heading_deg + "deg";
 
+      document.getElementById("moon-body").style.top = f.moon_y_pct + "%";
       document.getElementById("dist-earth").textContent = f.distance_earth_km;
       document.getElementById("dist-moon").textContent = f.distance_moon_km;
       document.getElementById("elapsed").textContent = "T+" + f.hours_elapsed + "h";

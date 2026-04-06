@@ -58,7 +58,7 @@ function projectToPlane(pos, vel, moon) {
   const perpZ = pos.z - u * e1.z;
   const perpMag = Math.sqrt(perpX ** 2 + perpY ** 2 + perpZ ** 2);
   const cross = e1.x * perpY - e1.y * perpX;
-  const v = cross >= 0 ? perpMag : -perpMag;
+  const v = cross >= 0 ? -perpMag : perpMag;
 
   const vu = vel.vx * e1.x + vel.vy * e1.y + vel.vz * e1.z;
   const vPerpX = vel.vx - vu * e1.x;
@@ -67,16 +67,16 @@ function projectToPlane(pos, vel, moon) {
     vPerpX ** 2 + vPerpY ** 2 + (vel.vz - vu * e1.z) ** 2,
   );
   const vCross = e1.x * vPerpY - e1.y * vPerpX;
-  const vv = vCross >= 0 ? vPerpMag : -vPerpMag;
+  const vv = vCross >= 0 ? -vPerpMag : vPerpMag;
   const headingDeg = Math.round(Math.atan2(vv, vu) * (180 / Math.PI));
 
   return { u, v, headingDeg };
 }
 
-function toMapCoords(u, v, moonU) {
-  const scale = (MAP_H - 2 * PADDING) / moonU;
-  const mapY = MAP_H - PADDING - (u / moonU) * (MAP_H - 2 * PADDING);
-  const mapX = MAP_W / 2 + v * scale;
+function toMapCoords(u, v, maxU) {
+  const vertRange = MAP_H - 2 * PADDING;
+  const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
+  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W);
   return {
     mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
     mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),
@@ -113,16 +113,20 @@ for (let i = 0; i < craftPoints.length; i++) {
     moon,
   );
   const moonU = magnitude(moon);
-  const craftMap = toMapCoords(craftProj.u, craftProj.v, moonU);
+  const maxU = Math.max(moonU, craftProj.u) * 1.25;
+  const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
+  const moonMap = toMapCoords(moonU, 0, maxU);
 
   const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
   const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
+  const moonYPct = Math.round((moonMap.mapY / MAP_H) * 100);
   const craftHeadingDeg = 180 - craftProj.headingDeg;
 
   frames.push({
     craft_x_pct: craftXPct,
     craft_y_pct: craftYPct,
     craft_heading_deg: craftHeadingDeg,
+    moon_y_pct: moonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),

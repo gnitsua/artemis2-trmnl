@@ -30,17 +30,18 @@
     .map {
       position: relative;
       width: 420px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px 0;
+      height: 100%;
     }
-    .body-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
+    .map-body {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .map-earth {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
     }
     .body-label { font-size: 13px; color: #666; }
     .circle { border-radius: 9999px; background: black; }
@@ -79,6 +80,7 @@
       transform: translate(-50%, -50%);
     }
 
+
     /* Stats */
     .stats {
       flex: 1;
@@ -101,18 +103,21 @@
   <div class="screen">
     <!-- Map -->
     <div class="map" id="map">
-      <div class="body-group">
+      <!-- Moon (dynamic y) -->
+      <div class="map-body" id="moon-body">
         <div class="circle moon"></div>
-        <span class="body-label">Moon</span>
+        <span class="body-label" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
       </div>
 
+      <!-- Spacecraft -->
       <div class="map-craft" id="spacecraft">
         <div class="capsule-wrap"><div class="capsule"></div></div>
       </div>
 
-      <div class="body-group">
-        <span class="body-label">Earth</span>
+      <!-- Earth (fixed bottom) -->
+      <div class="map-earth">
         <div class="circle earth"></div>
+        <span class="body-label" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
       </div>
     </div>
 
@@ -139,7 +144,7 @@
   </div>
 
   <script>
-    const DATA_URL = "https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.json";
+    const DATA_URL = "data/position.json";
 
     async function update() {
       try {
@@ -154,6 +159,10 @@
         sc.style.left = data.craft_x_pct + "%";
         sc.style.top = data.craft_y_pct + "%";
         sc.querySelector(".capsule-wrap").style.rotate = data.craft_heading_deg + "deg";
+
+        // Position Moon
+        const moonEl = document.getElementById("moon-body");
+        moonEl.style.top = data.moon_y_pct + "%";
 
         // Render trail (include current position to close the gap)
         const map = document.getElementById("map");

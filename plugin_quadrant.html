@@ -1,5 +1,7 @@
 <style>
   .map { position: relative; height: 140px; }
+  .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); }
+  .map-earth { bottom: 5px; left: 50%; transform: translateX(-50%); }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
   .trail-dot { position: absolute; width: 2px; height: 2px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); opacity: 0.2; }
   .circle { border-radius: 9999px; }
@@ -20,9 +22,11 @@
 
 <div class="layout layout--col layout--center-x gap--xsmall">
   <!-- Map area -->
-  <div class="map flex flex--col flex--center-x flex--between w--full">
-    <!-- Moon (top) -->
-    <div class="circle bg--black w--3.5 h--3.5 mt--xsmall"></div>
+  <div class="map w--full">
+    <!-- Moon -->
+    <div class="map-body" style="top: {{ moon_y_pct }}%;">
+      <div class="circle bg--black w--3.5 h--3.5"></div>
+    </div>
 
     <!-- Trail -->
     {% for point in trail %}
@@ -35,8 +39,10 @@
       <div class="capsule-wrap" style="rotate: {{ craft_heading_deg }}deg;"><div class="capsule"></div></div>
     </div>
 
-    <!-- Earth (bottom) -->
-    <div class="circle bg--black w--7 h--7 mb--xsmall"></div>
+    <!-- Earth -->
+    <div class="map-earth" style="position: absolute;">
+      <div class="circle bg--black w--7 h--7"></div>
+    </div>
   </div>
 
   <!-- Stats -->
