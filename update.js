@@ -118,7 +118,7 @@ function toMapCoords(u, v, maxU) {
   const vertRange = MAP_H - 2 * PADDING;
   const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
   // Scale v so that percentages of MAP_W match percentages of MAP_H in real km
-  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W);
+  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 0.66;
   return {
     mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
     mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),
@@ -174,14 +174,40 @@ async function main() {
     moon,
   );
   const moonU = magnitude(moon);
-  const maxU = Math.max(moonU, craftProj.u) * 1.25;
+  const maxU = Math.max(moonU, craftProj.u) * 1.05;
   const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
   const moonMap = toMapCoords(moonU, 0, maxU);
 
-  const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
-  const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
+  const moonXPct = 50; // Moon is always horizontally centered
   const moonYPct = Math.round((moonMap.mapY / MAP_H) * 100);
   const craftHeadingDeg = 180 - craftProj.headingDeg;
+
+  // Enforce minimum separation from Moon (in percentage points)
+  // Prevents capsule from visually overlapping the Moon circle
+  const MIN_SEP = 6; // ~24px on a 400px display
+  function separateFromMoon(xPct, yPct) {
+    const dx = xPct - moonXPct;
+    const dy = yPct - moonYPct;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < MIN_SEP && dist > 0) {
+      const scale = MIN_SEP / dist;
+      return {
+        x: Math.round(moonXPct + dx * scale),
+        y: Math.round(moonYPct + dy * scale),
+      };
+    }
+    if (dist === 0) {
+      // Directly on Moon — push down (toward Earth)
+      return { x: Math.round(xPct), y: Math.round(yPct + MIN_SEP) };
+    }
+    return { x: Math.round(xPct), y: Math.round(yPct) };
+  }
+
+  const craftRaw = {
+    x: (craftMap.mapX / MAP_W) * 100,
+    y: (craftMap.mapY / MAP_H) * 100,
+  };
+  const craftSep = separateFromMoon(craftRaw.x, craftRaw.y);
 
   // Compute trail from all fetched points using the same scale
   const trail = [];
@@ -190,17 +216,30 @@ async function main() {
     const m = moonPoints[i];
     const proj = projectToPlane(c, { vx: c.vx, vy: c.vy, vz: c.vz }, m);
     const mu = magnitude(m);
-    const mu2 = Math.max(mu, proj.u) * 1.25;
+    const mu2 = Math.max(mu, proj.u) * 1.05;
     const coords = toMapCoords(proj.u, proj.v, mu2);
-    trail.push({
-      x: Math.round((coords.mapX / MAP_W) * 100),
-      y: Math.round((coords.mapY / MAP_H) * 100),
-    });
+    const mMap = toMapCoords(mu, 0, mu2);
+    const rawX = (coords.mapX / MAP_W) * 100;
+    const rawY = (coords.mapY / MAP_H) * 100;
+    const mY = (mMap.mapY / MAP_H) * 100;
+    // Separate trail points from their contemporaneous Moon position
+    const tdx = rawX - moonXPct;
+    const tdy = rawY - mY;
+    const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
+    if (tdist < MIN_SEP && tdist > 0) {
+      const s = MIN_SEP / tdist;
+      trail.push({
+        x: Math.round(moonXPct + tdx * s),
+        y: Math.round(mY + tdy * s),
+      });
+    } else {
+      trail.push({ x: Math.round(rawX), y: Math.round(rawY) });
+    }
   }
 
   const mergeVars = {
-    craft_x_pct: craftXPct,
-    craft_y_pct: craftYPct,
+    craft_x_pct: craftSep.x,
+    craft_y_pct: craftSep.y,
     craft_heading_deg: craftHeadingDeg,
     moon_y_pct: moonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
@@ -216,7 +255,7 @@ async function main() {
   writeFileSync(outPath, JSON.stringify(mergeVars, null, 2) + "\n");
   console.log("Wrote", outPath);
   console.log(
-    `${count} trail points, craft:(${craftXPct},${craftYPct}) moon_y:${moonYPct} heading:${craftHeadingDeg}`,
+    `${count} trail points, craft:(${craftSep.x},${craftSep.y}) moon_y:${moonYPct} heading:${craftHeadingDeg}`,
   );
 }
 

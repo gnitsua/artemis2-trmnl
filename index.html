@@ -3,60 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Artemis II Tracker</title>
+  <title>Artemis II - Debug Preview</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: Inter, system-ui, sans-serif;
-      background: #f5f5f5;
+      background: #222;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      padding: 20px;
+      gap: 16px;
+      color: white;
     }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+    .controls button {
+      padding: 6px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border: 1px solid #666;
+      background: #333;
+      color: white;
+      border-radius: 4px;
+    }
+    .controls button:hover { background: #444; }
+    .controls button.active { background: #0066cc; border-color: #0088ff; }
+    .status { font-size: 12px; color: #888; }
+
+    /* Frame wrapper */
+    .frame-wrapper {
+      border: 1px solid #444;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .frame-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    /* TRMNL screen simulation */
     .screen {
       background: white;
-      width: 800px;
-      height: 480px;
-      display: flex;
-      flex-direction: row;
-      padding: 24px;
-      gap: 24px;
-      border-radius: 12px;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-    }
-
-    /* Map */
-    .map {
+      color: black;
       position: relative;
-      width: 420px;
-      height: 100%;
+      overflow: hidden;
     }
-    .map-body {
-      position: absolute;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    .map-earth {
-      position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    .body-label { font-size: 13px; color: #666; }
-    .circle { border-radius: 9999px; background: black; }
-    .earth { width: 64px; height: 64px; }
-    .moon { width: 32px; height: 32px; }
 
-    /* Capsule */
-    .map-craft {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    /* Shared map styles */
+    .map { position: relative; }
+    .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); }
+    .map-earth { position: absolute; left: 50%; transform: translateX(-50%); }
+    .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
+    .trail-dot { position: absolute; border-radius: 9999px; background: rgba(0,0,0,0.2); transform: translate(-50%, -50%); }
+    .circle { border-radius: 9999px; background: black; }
+    .body-label { font-size: 13px; color: #666; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+    .body-label-below { top: 100%; }
+    .body-label-above { bottom: 100%; }
     .capsule-wrap {
       filter:
         drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white)
@@ -64,125 +75,261 @@
         drop-shadow(1px 1px 0 white) drop-shadow(-1px 1px 0 white)
         drop-shadow(1px -1px 0 white) drop-shadow(-1px -1px 0 white);
     }
-    .capsule {
-      width: 16px;
-      height: 16px;
-      background: black;
-      clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%);
-    }
-
-    .trail-dot {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      border-radius: 9999px;
-      background: rgba(0,0,0,0.2);
-      transform: translate(-50%, -50%);
-    }
-
+    .capsule { background: black; clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%); }
 
     /* Stats */
-    .stats {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 20px;
-    }
-    .stats h1 { font-size: 30px; font-weight: 700; }
-    .stat-group { display: flex; flex-direction: column; gap: 4px; }
-    .stat-label { font-size: 13px; color: #888; }
-    .stat-value { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .stat-unit { font-size: 13px; color: #666; }
+    .stats { display: flex; flex-direction: column; justify-content: center; }
+    .stats h1 { font-weight: 700; }
+    .stat-group { display: flex; flex-direction: column; }
+    .stat-label { color: #888; }
+    .stat-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stat-unit { color: #666; }
     .divider { height: 1px; background: #ddd; }
-    .updated { font-size: 12px; color: #aaa; }
-    .loading { font-size: 14px; color: #aaa; }
+    .updated { color: #aaa; }
+
+    /* Layout: Full (800x480) */
+    .screen.full { width: 800px; height: 480px; display: flex; flex-direction: row; padding: 24px; gap: 24px; }
+    .full .map { width: 420px; height: 100%; }
+    .full .map-earth { bottom: 24px; }
+    .full .moon-circle { width: 32px; height: 32px; }
+    .full .earth-circle { width: 64px; height: 64px; }
+    .full .capsule { width: 16px; height: 16px; }
+    .full .trail-dot { width: 3px; height: 3px; }
+    .full .stats { flex: 1; gap: 20px; }
+    .full .stats h1 { font-size: 30px; }
+    .full .stat-group { gap: 4px; }
+    .full .stat-label { font-size: 13px; }
+    .full .stat-value { font-size: 42px; }
+    .full .stat-unit { font-size: 13px; }
+    .full .updated { font-size: 12px; }
+
+    /* Layout: Half Vertical (400x480) */
+    .screen.half-v { width: 400px; height: 480px; display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 8px; }
+    .half-v .map { width: 100%; height: 280px; }
+    .half-v .map-earth { bottom: 10px; }
+    .half-v .moon-circle { width: 20px; height: 20px; }
+    .half-v .earth-circle { width: 40px; height: 40px; }
+    .half-v .capsule { width: 12px; height: 12px; }
+    .half-v .trail-dot { width: 3px; height: 3px; }
+    .half-v .stats-row { display: flex; gap: 32px; justify-content: center; }
+    .half-v .stat-group { align-items: center; gap: 2px; }
+    .half-v .stat-label { font-size: 12px; }
+    .half-v .stat-value { font-size: 28px; }
+    .half-v .stat-unit { font-size: 12px; }
+    .half-v .updated { font-size: 11px; }
+
+    /* Layout: Half Horizontal (800x240) */
+    .screen.half-h { width: 800px; height: 240px; display: flex; flex-direction: row; padding: 16px; gap: 16px; }
+    .half-h .map { width: 300px; height: 100%; }
+    .half-h .map-earth { bottom: 10px; }
+    .half-h .moon-circle { width: 20px; height: 20px; }
+    .half-h .earth-circle { width: 36px; height: 36px; }
+    .half-h .capsule { width: 12px; height: 12px; }
+    .half-h .trail-dot { width: 2px; height: 2px; }
+    .half-h .stats { flex: 1; gap: 12px; }
+    .half-h .stats h1 { font-size: 22px; }
+    .half-h .stats-row { display: flex; gap: 32px; }
+    .half-h .stat-group { gap: 2px; }
+    .half-h .stat-label { font-size: 12px; }
+    .half-h .stat-value { font-size: 28px; }
+    .half-h .stat-unit { font-size: 12px; }
+    .half-h .updated { font-size: 11px; }
+
+    /* Layout: Quadrant (400x240) */
+    .screen.quadrant { width: 400px; height: 240px; display: flex; flex-direction: column; align-items: center; padding: 12px; gap: 4px; }
+    .quadrant .map { width: 100%; height: 140px; }
+    .quadrant .map-earth { bottom: 5px; }
+    .quadrant .moon-circle { width: 14px; height: 14px; }
+    .quadrant .earth-circle { width: 28px; height: 28px; }
+    .quadrant .capsule { width: 10px; height: 10px; }
+    .quadrant .trail-dot { width: 2px; height: 2px; }
+    .quadrant .stats h1 { font-size: 16px; }
+    .quadrant .stats-row { display: flex; gap: 24px; justify-content: center; }
+    .quadrant .stat-group { align-items: center; gap: 0; }
+    .quadrant .stat-label { font-size: 11px; }
+    .quadrant .stat-value { font-size: 22px; }
   </style>
 </head>
 <body>
-  <div class="screen">
-    <!-- Map -->
-    <div class="map" id="map">
-      <!-- Moon (dynamic y) -->
-      <div class="map-body" id="moon-body">
-        <div class="circle moon"></div>
-        <span class="body-label" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
-      </div>
-
-      <!-- Spacecraft -->
-      <div class="map-craft" id="spacecraft">
-        <div class="capsule-wrap"><div class="capsule"></div></div>
-      </div>
-
-      <!-- Earth (fixed bottom) -->
-      <div class="map-earth">
-        <div class="circle earth"></div>
-        <span class="body-label" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats">
-      <h1>Artemis II</h1>
-
-      <div class="stat-group">
-        <span class="stat-label">Distance from Earth</span>
-        <span class="stat-value" id="dist-earth"><span class="loading">Loading…</span></span>
-        <span class="stat-unit">km</span>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="stat-group">
-        <span class="stat-label">Distance from Moon</span>
-        <span class="stat-value" id="dist-moon">—</span>
-        <span class="stat-unit">km</span>
-      </div>
-
-      <span class="updated" id="updated-at"></span>
-    </div>
+  <div class="controls">
+    <button class="layout-btn active" data-layout="full">Full (800×480)</button>
+    <button class="layout-btn" data-layout="half-v">Half Vertical (400×480)</button>
+    <button class="layout-btn" data-layout="half-h">Half Horizontal (800×240)</button>
+    <button class="layout-btn" data-layout="quadrant">Quadrant (400×240)</button>
   </div>
+
+  <div class="frame-label" id="frame-label">Full — 800×480</div>
+  <div class="frame-wrapper">
+    <div class="screen full" id="screen"></div>
+  </div>
+  <div class="status" id="status">Loading...</div>
 
   <script>
     const DATA_URL = "data/position.json";
+    let data = null;
+    let currentLayout = "full";
 
-    async function update() {
-      try {
-        const resp = await fetch(DATA_URL);
-        const data = await resp.json();
+    const LAYOUTS = {
+      full: { label: "Full — 800×480" },
+      "half-v": { label: "Half Vertical — 400×480" },
+      "half-h": { label: "Half Horizontal — 800×240" },
+      quadrant: { label: "Quadrant — 400×240" },
+    };
 
-        document.getElementById("dist-earth").textContent = data.distance_earth_km;
-        document.getElementById("dist-moon").textContent = data.distance_moon_km;
-        document.getElementById("updated-at").textContent = data.updated_at;
-
-        const sc = document.getElementById("spacecraft");
-        sc.style.left = data.craft_x_pct + "%";
-        sc.style.top = data.craft_y_pct + "%";
-        sc.querySelector(".capsule-wrap").style.rotate = data.craft_heading_deg + "deg";
-
-        // Position Moon
-        const moonEl = document.getElementById("moon-body");
-        moonEl.style.top = data.moon_y_pct + "%";
-
-        // Render trail (include current position to close the gap)
-        const map = document.getElementById("map");
-        map.querySelectorAll(".trail-dot").forEach(d => d.remove());
-        const trailPoints = data.trail ? [...data.trail] : [];
-        trailPoints.push({ x: data.craft_x_pct, y: data.craft_y_pct });
-        for (const point of trailPoints) {
-          const dot = document.createElement("div");
-          dot.className = "trail-dot";
-          dot.style.left = point.x + "%";
-          dot.style.top = point.y + "%";
-          map.appendChild(dot);
+    function trailHTML(d) {
+      let html = "";
+      if (d.trail) {
+        for (const p of d.trail) {
+          html += `<div class="trail-dot" style="left:${p.x}%;top:${p.y}%"></div>`;
         }
-      } catch (err) {
-        console.error("Failed to fetch position data:", err);
+      }
+      html += `<div class="trail-dot" style="left:${d.craft_x_pct}%;top:${d.craft_y_pct}%"></div>`;
+      return html;
+    }
+
+    function craftHTML(d) {
+      return `<div class="map-craft" style="left:${d.craft_x_pct}%;top:${d.craft_y_pct}%">
+        <div class="capsule-wrap" style="rotate:${d.craft_heading_deg}deg"><div class="capsule"></div></div>
+      </div>`;
+    }
+
+    function moonHTML(d, circleClass) {
+      return `<div class="map-body" style="top:${d.moon_y_pct}%">
+        <div class="circle ${circleClass}"></div>
+        <span class="body-label body-label-below">Moon</span>
+      </div>`;
+    }
+
+    function earthHTML(circleClass, showLabel) {
+      return `<div class="map-earth">
+        <div class="circle ${circleClass}"></div>
+        ${showLabel !== false ? '<span class="body-label body-label-above">Earth</span>' : ''}
+      </div>`;
+    }
+
+    function mapHTML(d, moonClass, earthClass, showEarthLabel) {
+      return `<div class="map">
+        ${moonHTML(d, moonClass)}
+        ${trailHTML(d)}
+        ${craftHTML(d)}
+        ${earthHTML(earthClass, showEarthLabel)}
+      </div>`;
+    }
+
+    function renderFull(d) {
+      return `
+        ${mapHTML(d, "moon-circle", "earth-circle")}
+        <div class="stats">
+          <h1>Artemis II</h1>
+          <div class="stat-group">
+            <span class="stat-label">Distance from Earth</span>
+            <span class="stat-value">${d.distance_earth_km}</span>
+            <span class="stat-unit">km</span>
+          </div>
+          <div class="divider"></div>
+          <div class="stat-group">
+            <span class="stat-label">Distance from Moon</span>
+            <span class="stat-value">${d.distance_moon_km}</span>
+            <span class="stat-unit">km</span>
+          </div>
+          <span class="updated">${d.updated_at}</span>
+        </div>`;
+    }
+
+    function renderHalfV(d) {
+      return `
+        ${mapHTML(d, "moon-circle", "earth-circle")}
+        <div class="stats-row">
+          <div class="stat-group">
+            <span class="stat-label">Earth</span>
+            <span class="stat-value">${d.distance_earth_km}</span>
+            <span class="stat-unit">km</span>
+          </div>
+          <div class="stat-group">
+            <span class="stat-label">Moon</span>
+            <span class="stat-value">${d.distance_moon_km}</span>
+            <span class="stat-unit">km</span>
+          </div>
+        </div>
+        <span class="updated">${d.updated_at}</span>`;
+    }
+
+    function renderHalfH(d) {
+      return `
+        ${mapHTML(d, "moon-circle", "earth-circle")}
+        <div class="stats">
+          <h1>Artemis II</h1>
+          <div class="stats-row">
+            <div class="stat-group">
+              <span class="stat-label">Earth</span>
+              <span class="stat-value">${d.distance_earth_km}</span>
+              <span class="stat-unit">km</span>
+            </div>
+            <div class="stat-group">
+              <span class="stat-label">Moon</span>
+              <span class="stat-value">${d.distance_moon_km}</span>
+              <span class="stat-unit">km</span>
+            </div>
+          </div>
+          <span class="updated">${d.updated_at}</span>
+        </div>`;
+    }
+
+    function renderQuadrant(d) {
+      return `
+        ${mapHTML(d, "moon-circle", "earth-circle", false)}
+        <div class="stats">
+          <h1>Artemis II</h1>
+        </div>
+        <div class="stats-row">
+          <div class="stat-group">
+            <span class="stat-label">Earth</span>
+            <span class="stat-value">${d.distance_earth_km}</span>
+          </div>
+          <div class="stat-group">
+            <span class="stat-label">Moon</span>
+            <span class="stat-value">${d.distance_moon_km}</span>
+          </div>
+        </div>`;
+    }
+
+    function renderLayout() {
+      if (!data) return;
+      const screen = document.getElementById("screen");
+      screen.className = `screen ${currentLayout}`;
+      document.getElementById("frame-label").textContent = LAYOUTS[currentLayout].label;
+
+      switch (currentLayout) {
+        case "full": screen.innerHTML = renderFull(data); break;
+        case "half-v": screen.innerHTML = renderHalfV(data); break;
+        case "half-h": screen.innerHTML = renderHalfH(data); break;
+        case "quadrant": screen.innerHTML = renderQuadrant(data); break;
       }
     }
 
-    update();
-    setInterval(update, 60_000);
+    async function loadData() {
+      try {
+        const resp = await fetch(DATA_URL);
+        data = await resp.json();
+        document.getElementById("status").textContent =
+          `${data.updated_at} · Earth: ${data.distance_earth_km} km · Moon: ${data.distance_moon_km} km · Trail: ${(data.trail || []).length} pts`;
+        renderLayout();
+      } catch (err) {
+        document.getElementById("status").textContent = "Error: " + err.message;
+      }
+    }
+
+    document.querySelectorAll(".layout-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".layout-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentLayout = btn.dataset.layout;
+        renderLayout();
+      });
+    });
+
+    loadData();
+    setInterval(loadData, 60_000);
   </script>
 </body>
 </html>

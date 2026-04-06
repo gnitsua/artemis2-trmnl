@@ -76,7 +76,7 @@ function projectToPlane(pos, vel, moon) {
 function toMapCoords(u, v, maxU) {
   const vertRange = MAP_H - 2 * PADDING;
   const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
-  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W);
+  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 0.66;
   return {
     mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
     mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),
@@ -113,7 +113,7 @@ for (let i = 0; i < craftPoints.length; i++) {
     moon,
   );
   const moonU = magnitude(moon);
-  const maxU = Math.max(moonU, craftProj.u) * 1.25;
+  const maxU = Math.max(moonU, craftProj.u) * 1.05;
   const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
   const moonMap = toMapCoords(moonU, 0, maxU);
 
