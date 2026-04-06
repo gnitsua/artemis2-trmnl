@@ -1,10 +1,14 @@
 <style>
   .map { position: relative; width: 300px; }
-  .map-craft { position: absolute; transform: translate(-50%, -50%); }
+  .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
   .map-craft-label { position: absolute; left: 18px; top: -2px; white-space: nowrap; }
   .circle { border-radius: 9999px; }
   .capsule-wrap {
-    filter: drop-shadow(0 0 0 white) drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white) drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white);
+    filter:
+      drop-shadow(3px 0 0 white) drop-shadow(-3px 0 0 white)
+      drop-shadow(0 3px 0 white) drop-shadow(0 -3px 0 white)
+      drop-shadow(2px 2px 0 white) drop-shadow(-2px 2px 0 white)
+      drop-shadow(2px -2px 0 white) drop-shadow(-2px -2px 0 white);
   }
   .capsule {
     width: 12px;
