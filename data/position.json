@@ -1,10 +1,10 @@
 {
   "craft_x_pct": 53,
   "craft_y_pct": 18,
-  "craft_heading_deg": 188,
-  "distance_earth_km": "408,461",
-  "distance_moon_km": "17,706",
-  "speed_kmh": "1,697",
+  "craft_heading_deg": 189,
+  "distance_earth_km": "408,777",
+  "distance_moon_km": "17,074",
+  "speed_kmh": "1,689",
   "progress": 100,
-  "updated_at": "2026-04-06 19:05 UTC"
+  "updated_at": "2026-04-06 19:16 UTC"
 }
