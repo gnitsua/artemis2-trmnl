@@ -11,7 +11,7 @@ const MOON_ID = "301";
 // Map layout constants matching the plugin template (pixels)
 const MAP_W = 420;
 const MAP_H = 480;
-const PADDING = 60;
+const PADDING = 90;
 
 function buildHorizonsUrl(command) {
   const now = new Date();
