@@ -1,8 +1,12 @@
+import { writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api";
 const ARTEMIS_ID = "-1024";
 const MOON_ID = "301";
-const TRMNL_WEBHOOK = `https://usetrmnl.com/api/custom_plugins/${process.env.TRMNL_PLUGIN_UUID}`;
-const TRMNL_API_KEY = process.env.TRMNL_API_KEY;
 
 // Map layout constants matching the plugin template (pixels)
 const MAP_W = 420;
@@ -147,28 +151,10 @@ async function main() {
       new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
   };
 
-  console.log("Computed merge_variables:", JSON.stringify(mergeVars, null, 2));
-
-  if (!TRMNL_API_KEY || !process.env.TRMNL_PLUGIN_UUID) {
-    console.log(
-      "TRMNL_API_KEY or TRMNL_PLUGIN_UUID not set — skipping webhook push.",
-    );
-    console.log("To test locally, set these env vars and re-run.");
-    return;
-  }
-
-  console.log("Pushing to TRMNL webhook...");
-  const resp = await fetch(TRMNL_WEBHOOK, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${TRMNL_API_KEY}`,
-    },
-    body: JSON.stringify({ merge_variables: mergeVars }),
-  });
-
-  const result = await resp.text();
-  console.log(`TRMNL response (${resp.status}):`, result);
+  const outPath = join(__dirname, "data", "position.json");
+  writeFileSync(outPath, JSON.stringify(mergeVars, null, 2) + "\n");
+  console.log("Wrote", outPath);
+  console.log(JSON.stringify(mergeVars, null, 2));
 }
 
 main().catch((err) => {
