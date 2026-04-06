@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artemis II Tracker</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .screen {
+      background: white;
+      width: 800px;
+      height: 480px;
+      display: flex;
+      flex-direction: row;
+      padding: 24px;
+      gap: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Map */
+    .map {
+      position: relative;
+      width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 0;
+    }
+    .body-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .body-label { font-size: 13px; color: #666; }
+    .circle { border-radius: 9999px; background: black; }
+    .earth { width: 64px; height: 64px; }
+    .moon { width: 32px; height: 32px; }
+
+    /* Capsule */
+    .map-craft {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .capsule-wrap {
+      filter:
+        drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white)
+        drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)
+        drop-shadow(1px 1px 0 white) drop-shadow(-1px 1px 0 white)
+        drop-shadow(1px -1px 0 white) drop-shadow(-1px -1px 0 white);
+    }
+    .capsule {
+      width: 16px;
+      height: 16px;
+      background: black;
+      clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%);
+    }
+    .craft-label {
+      font-size: 13px;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    /* Stats */
+    .stats {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 20px;
+    }
+    .stats h1 { font-size: 30px; font-weight: 700; }
+    .stat-group { display: flex; flex-direction: column; gap: 4px; }
+    .stat-label { font-size: 13px; color: #888; }
+    .stat-value { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stat-unit { font-size: 13px; color: #666; }
+    .divider { height: 1px; background: #ddd; }
+    .updated { font-size: 12px; color: #aaa; }
+    .loading { font-size: 14px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <!-- Map -->
+    <div class="map" id="map">
+      <div class="body-group">
+        <div class="circle moon"></div>
+        <span class="body-label">Moon</span>
+      </div>
+
+      <div class="map-craft" id="spacecraft">
+        <div class="capsule-wrap"><div class="capsule"></div></div>
+        <span class="craft-label">Orion</span>
+      </div>
+
+      <div class="body-group">
+        <span class="body-label">Earth</span>
+        <div class="circle earth"></div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <h1>Artemis II</h1>
+
+      <div class="stat-group">
+        <span class="stat-label">Distance from Earth</span>
+        <span class="stat-value" id="dist-earth"><span class="loading">Loading…</span></span>
+        <span class="stat-unit">km</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stat-group">
+        <span class="stat-label">Distance from Moon</span>
+        <span class="stat-value" id="dist-moon">—</span>
+        <span class="stat-unit">km</span>
+      </div>
+
+      <span class="updated" id="updated-at"></span>
+    </div>
+  </div>
+
+  <script>
+    const DATA_URL = "https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.json";
+
+    async function update() {
+      try {
+        const resp = await fetch(DATA_URL);
+        const data = await resp.json();
+
+        document.getElementById("dist-earth").textContent = data.distance_earth_km;
+        document.getElementById("dist-moon").textContent = data.distance_moon_km;
+        document.getElementById("updated-at").textContent = data.updated_at;
+
+        const sc = document.getElementById("spacecraft");
+        sc.style.left = data.craft_x_pct + "%";
+        sc.style.top = data.craft_y_pct + "%";
+        sc.style.rotate = data.craft_heading_deg + "deg";
+      } catch (err) {
+        console.error("Failed to fetch position data:", err);
+      }
+    }
+
+    update();
+    setInterval(update, 60_000);
+  </script>
+</body>
+</html>
