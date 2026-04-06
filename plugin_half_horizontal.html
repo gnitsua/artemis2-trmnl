@@ -31,6 +31,7 @@
     {% for point in trail %}
       <div class="trail-dot" style="left: {{ point.x }}%; top: {{ point.y }}%;"></div>
     {% endfor %}
+    <div class="trail-dot" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;"></div>
 
     <!-- Spacecraft -->
     <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">

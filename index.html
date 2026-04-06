@@ -155,17 +155,17 @@
         sc.style.top = data.craft_y_pct + "%";
         sc.querySelector(".capsule-wrap").style.rotate = data.craft_heading_deg + "deg";
 
-        // Render trail
+        // Render trail (include current position to close the gap)
         const map = document.getElementById("map");
         map.querySelectorAll(".trail-dot").forEach(d => d.remove());
-        if (data.trail) {
-          for (const point of data.trail) {
-            const dot = document.createElement("div");
-            dot.className = "trail-dot";
-            dot.style.left = point.x + "%";
-            dot.style.top = point.y + "%";
-            map.appendChild(dot);
-          }
+        const trailPoints = data.trail ? [...data.trail] : [];
+        trailPoints.push({ x: data.craft_x_pct, y: data.craft_y_pct });
+        for (const point of trailPoints) {
+          const dot = document.createElement("div");
+          dot.className = "trail-dot";
+          dot.style.left = point.x + "%";
+          dot.style.top = point.y + "%";
+          map.appendChild(dot);
         }
       } catch (err) {
         console.error("Failed to fetch position data:", err);
