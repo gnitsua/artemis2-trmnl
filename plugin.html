@@ -1,7 +1,6 @@
 <style>
   .map { position: relative; width: 420px; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
-  .map-craft-label { position: absolute; left: 22px; top: -2px; white-space: nowrap; }
   .circle { border-radius: 9999px; }
   .capsule-wrap {
     filter:
@@ -28,9 +27,8 @@
     </div>
 
     <!-- Spacecraft -->
-    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; rotate: {{ craft_heading_deg }}deg;">
-      <div class="capsule-wrap"><div class="capsule"></div></div>
-      <span class="label label--small map-craft-label">Orion</span>
+    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
+      <div class="capsule-wrap" style="rotate: {{ craft_heading_deg }}deg;"><div class="capsule"></div></div>
     </div>
 
     <!-- Earth (bottom) -->

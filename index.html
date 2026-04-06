@@ -69,11 +69,6 @@
       background: black;
       clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%);
     }
-    .craft-label {
-      font-size: 13px;
-      color: #333;
-      white-space: nowrap;
-    }
 
     /* Stats */
     .stats {
@@ -104,7 +99,6 @@
 
       <div class="map-craft" id="spacecraft">
         <div class="capsule-wrap"><div class="capsule"></div></div>
-        <span class="craft-label">Orion</span>
       </div>
 
       <div class="body-group">
@@ -150,7 +144,7 @@
         const sc = document.getElementById("spacecraft");
         sc.style.left = data.craft_x_pct + "%";
         sc.style.top = data.craft_y_pct + "%";
-        sc.style.rotate = data.craft_heading_deg + "deg";
+        sc.querySelector(".capsule-wrap").style.rotate = data.craft_heading_deg + "deg";
       } catch (err) {
         console.error("Failed to fetch position data:", err);
       }
