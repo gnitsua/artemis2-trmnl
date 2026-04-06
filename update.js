@@ -174,7 +174,7 @@ async function main() {
     moon,
   );
   const moonU = magnitude(moon);
-  const maxU = Math.max(moonU, craftProj.u) * 1.05;
+  const maxU = Math.max(moonU, craftProj.u) * 0.95;
   const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
   const moonMap = toMapCoords(moonU, 0, maxU);
 
@@ -216,7 +216,7 @@ async function main() {
     const m = moonPoints[i];
     const proj = projectToPlane(c, { vx: c.vx, vy: c.vy, vz: c.vz }, m);
     const mu = magnitude(m);
-    const mu2 = Math.max(mu, proj.u) * 1.05;
+    const mu2 = Math.max(mu, proj.u) * 0.95;
     const coords = toMapCoords(proj.u, proj.v, mu2);
     const mMap = toMapCoords(mu, 0, mu2);
     const rawX = (coords.mapX / MAP_W) * 100;

@@ -113,7 +113,7 @@ for (let i = 0; i < craftPoints.length; i++) {
     moon,
   );
   const moonU = magnitude(moon);
-  const maxU = Math.max(moonU, craftProj.u) * 1.05;
+  const maxU = Math.max(moonU, craftProj.u) * 0.95;
   const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
   const moonMap = toMapCoords(moonU, 0, maxU);
 

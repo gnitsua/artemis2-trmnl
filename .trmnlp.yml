@@ -1,0 +1,4 @@
+watch:
+  - src
+
+variables_path: data/position.json
