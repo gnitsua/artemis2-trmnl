@@ -1,6 +1,7 @@
 <style>
   .map { position: relative; height: 140px; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
+  .trail-dot { position: absolute; width: 2px; height: 2px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); opacity: 0.2; }
   .circle { border-radius: 9999px; }
   .capsule-wrap {
     filter:
@@ -22,6 +23,11 @@
   <div class="map flex flex--col flex--center-x flex--between w--full">
     <!-- Moon (top) -->
     <div class="circle bg--black w--3.5 h--3.5 mt--xsmall"></div>
+
+    <!-- Trail -->
+    {% for point in trail %}
+      <div class="trail-dot" style="left: {{ point.x }}%; top: {{ point.y }}%;"></div>
+    {% endfor %}
 
     <!-- Spacecraft -->
     <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">

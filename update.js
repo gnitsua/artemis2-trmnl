@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -171,7 +171,18 @@ async function main() {
       new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
   };
 
+  // Load existing trail and append current position (max 96 = 24h at 15min)
   const outPath = join(__dirname, "data", "position.json");
+  let trail = [];
+  try {
+    const existing = JSON.parse(readFileSync(outPath, "utf8"));
+    trail = existing.trail || [];
+  } catch {}
+  trail.push({ x: craftXPct, y: craftYPct });
+  if (trail.length > 96) trail = trail.slice(-96);
+
+  mergeVars.trail = trail;
+
   writeFileSync(outPath, JSON.stringify(mergeVars, null, 2) + "\n");
   console.log("Wrote", outPath);
   console.log(JSON.stringify(mergeVars, null, 2));

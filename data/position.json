@@ -1,10 +1,16 @@
 {
   "craft_x_pct": 53,
   "craft_y_pct": 18,
-  "craft_heading_deg": 189,
-  "distance_earth_km": "408,777",
-  "distance_moon_km": "17,074",
-  "speed_kmh": "1,689",
+  "craft_heading_deg": 191,
+  "distance_earth_km": "409,156",
+  "distance_moon_km": "16,313",
+  "speed_kmh": "1,679",
   "progress": 100,
-  "updated_at": "2026-04-06 19:16 UTC"
+  "updated_at": "2026-04-06 19:30 UTC",
+  "trail": [
+    {
+      "x": 53,
+      "y": 18
+    }
+  ]
 }

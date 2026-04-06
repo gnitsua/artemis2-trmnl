@@ -70,6 +70,15 @@
       clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%);
     }
 
+    .trail-dot {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 9999px;
+      background: rgba(0,0,0,0.2);
+      transform: translate(-50%, -50%);
+    }
+
     /* Stats */
     .stats {
       flex: 1;
@@ -145,6 +154,19 @@
         sc.style.left = data.craft_x_pct + "%";
         sc.style.top = data.craft_y_pct + "%";
         sc.querySelector(".capsule-wrap").style.rotate = data.craft_heading_deg + "deg";
+
+        // Render trail
+        const map = document.getElementById("map");
+        map.querySelectorAll(".trail-dot").forEach(d => d.remove());
+        if (data.trail) {
+          for (const point of data.trail) {
+            const dot = document.createElement("div");
+            dot.className = "trail-dot";
+            dot.style.left = point.x + "%";
+            dot.style.top = point.y + "%";
+            map.appendChild(dot);
+          }
+        }
       } catch (err) {
         console.error("Failed to fetch position data:", err);
       }
