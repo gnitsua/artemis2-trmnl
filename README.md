@@ -18,10 +18,12 @@ https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.
 
 ## Layouts
 
-| File                        | TRMNL Layout  | Size    | Description                          |
-| --------------------------- | ------------- | ------- | ------------------------------------ |
-| `plugin.html`               | Full          | 800x480 | Side-by-side map and stats           |
-| `plugin_half_vertical.html` | Half Vertical | 400x480 | Stacked map with compact stats below |
+| File                          | TRMNL Layout    | Size    | Description                          |
+| ----------------------------- | --------------- | ------- | ------------------------------------ |
+| `plugin.html`                 | Full            | 800x480 | Side-by-side map and stats           |
+| `plugin_half_vertical.html`   | Half Vertical   | 400x480 | Stacked map with compact stats below |
+| `plugin_half_horizontal.html` | Half Horizontal | 800x240 | Side-by-side map and stats, compact  |
+| `plugin_quadrant.html`        | Quadrant        | 400x240 | Minimal map with small stats         |
 
 ## Setup
 

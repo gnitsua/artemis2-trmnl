@@ -1,0 +1,32 @@
+<div class="layout layout--col layout--center-x gap--xsmall">
+  <!-- Map area -->
+  <div style="position: relative; width: 100%; height: 140px;">
+    <!-- Earth (bottom-center) -->
+    <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);">
+      <div style="width: 28px; height: 28px; border-radius: 9999px; background: black;"></div>
+    </div>
+
+    <!-- Moon (top-center) -->
+    <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%);">
+      <div style="width: 14px; height: 14px; border-radius: 9999px; background: black;"></div>
+    </div>
+
+    <!-- Spacecraft -->
+    <div style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; transform: translate(-50%, -50%);">
+      <div style="width: 8px; height: 8px; border-radius: 9999px; border: 2px solid black; background: white;"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <span class="title title--small">Artemis II</span>
+  <div class="flex flex--row flex--center-x gap--medium">
+    <div class="flex flex--col flex--center-x gap--none">
+      <span class="label label--small label--gray">Earth</span>
+      <span class="value value--small">{{ distance_earth_km }}</span>
+    </div>
+    <div class="flex flex--col flex--center-x gap--none">
+      <span class="label label--small label--gray">Moon</span>
+      <span class="value value--small">{{ distance_moon_km }}</span>
+    </div>
+  </div>
+</div>

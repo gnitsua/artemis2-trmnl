@@ -1,0 +1,42 @@
+<div class="layout layout--row gap--medium">
+  <!-- LEFT: Map area (landscape-oriented) -->
+  <div style="position: relative; width: 300px; height: 100%;">
+    <!-- Earth (bottom-center) -->
+    <div style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);">
+      <div style="width: 36px; height: 36px; border-radius: 9999px; background: black;"></div>
+      <span class="label label--small" style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
+    </div>
+
+    <!-- Moon (top-center) -->
+    <div style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%);">
+      <div style="width: 20px; height: 20px; border-radius: 9999px; background: black;"></div>
+      <span class="label label--small" style="position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
+    </div>
+
+    <!-- Spacecraft -->
+    <div style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; transform: translate(-50%, -50%);">
+      <div style="width: 10px; height: 10px; border-radius: 9999px; border: 2px solid black; background: white;"></div>
+      <span class="label label--small" style="position: absolute; left: 16px; top: -4px; white-space: nowrap;">Orion</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: Stats -->
+  <div class="flex flex--col flex--center-y gap--small" style="flex: 1;">
+    <span class="title">Artemis II</span>
+
+    <div class="flex flex--row gap--large">
+      <div class="flex flex--col gap--xsmall">
+        <span class="label label--small label--gray">Earth</span>
+        <span class="value">{{ distance_earth_km }}</span>
+        <span class="label label--small">km</span>
+      </div>
+      <div class="flex flex--col gap--xsmall">
+        <span class="label label--small label--gray">Moon</span>
+        <span class="value">{{ distance_moon_km }}</span>
+        <span class="label label--small">km</span>
+      </div>
+    </div>
+
+    <span class="label label--small label--gray">{{ updated_at }}</span>
+  </div>
+</div>
