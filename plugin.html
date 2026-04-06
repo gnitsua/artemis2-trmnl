@@ -1,0 +1,57 @@
+<div class="layout layout--row gap--medium">
+  <!-- LEFT: 2D trajectory map -->
+  <div style="position: relative; width: 420px; height: 100%;">
+    <!-- Earth (bottom-center) -->
+    <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);">
+      <div style="width: 60px; height: 60px; border-radius: 9999px; background: black;"></div>
+      <span class="label label--small" style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
+    </div>
+
+    <!-- Moon (positioned dynamically) -->
+    <div style="position: absolute; left: {{ moon_x_pct }}%; top: {{ moon_y_pct }}%; transform: translate(-50%, -50%);">
+      <div style="width: 30px; height: 30px; border-radius: 9999px; background: black;"></div>
+      <span class="label label--small" style="position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
+    </div>
+
+    <!-- Spacecraft -->
+    <div style="position: absolute; left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; transform: translate(-50%, -50%);">
+      <div style="width: 12px; height: 12px; border-radius: 9999px; border: 3px solid black; background: white;"></div>
+      <span class="label label--small" style="position: absolute; left: 20px; top: -4px; white-space: nowrap;">Orion</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: Mission stats -->
+  <div class="flex flex--col flex--center-y gap--medium" style="flex: 1;">
+    <span class="title title--large">Artemis II</span>
+
+    <div class="flex flex--col gap--small">
+      <span class="label label--gray">Distance from Earth</span>
+      <span class="value value--large">{{ distance_earth_km }}</span>
+      <span class="label label--small">km</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="flex flex--col gap--small">
+      <span class="label label--gray">Distance from Moon</span>
+      <span class="value value--large">{{ distance_moon_km }}</span>
+      <span class="label label--small">km</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="flex flex--row gap--large">
+      <div class="flex flex--col gap--xsmall">
+        <span class="label label--gray">Speed</span>
+        <span class="value">{{ speed_kmh }}</span>
+        <span class="label label--small">km/h</span>
+      </div>
+      <div class="flex flex--col gap--xsmall">
+        <span class="label label--gray">Progress</span>
+        <span class="value">{{ progress }}%</span>
+      </div>
+    </div>
+
+    <span class="label label--small label--gray">{{ updated_at }}</span>
+  </div>
+</div>
