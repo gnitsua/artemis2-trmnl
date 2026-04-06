@@ -68,22 +68,39 @@ function distance(a, b) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2);
 }
 
-function projectToPlane(spacecraft, moon) {
+function projectToPlane(pos, vel, moon) {
   const dist = magnitude(moon);
   const e1 = { x: moon.x / dist, y: moon.y / dist, z: moon.z / dist };
 
   // Component along Earth->Moon axis
-  const u = spacecraft.x * e1.x + spacecraft.y * e1.y + spacecraft.z * e1.z;
+  const u = pos.x * e1.x + pos.y * e1.y + pos.z * e1.z;
 
   // Perpendicular component
-  const perpX = spacecraft.x - u * e1.x;
-  const perpY = spacecraft.y - u * e1.y;
-  const perpZ = spacecraft.z - u * e1.z;
+  const perpX = pos.x - u * e1.x;
+  const perpY = pos.y - u * e1.y;
+  const perpZ = pos.z - u * e1.z;
   const perpMag = Math.sqrt(perpX ** 2 + perpY ** 2 + perpZ ** 2);
 
   // Sign via cross product
   const cross = e1.x * perpY - e1.y * perpX;
-  return { u, v: cross >= 0 ? perpMag : -perpMag };
+  const v = cross >= 0 ? perpMag : -perpMag;
+
+  // Project velocity onto same 2D plane for heading
+  const vu = vel.vx * e1.x + vel.vy * e1.y + vel.vz * e1.z;
+  const vPerpX = vel.vx - vu * e1.x;
+  const vPerpY = vel.vy - vu * e1.y;
+  const vPerpMag = Math.sqrt(
+    vPerpX ** 2 + vPerpY ** 2 + (vel.vz - vu * e1.z) ** 2,
+  );
+  const vCross = e1.x * vPerpY - e1.y * vPerpX;
+  const vv = vCross >= 0 ? vPerpMag : -vPerpMag;
+
+  // Heading in degrees: 0 = toward moon (up), 90 = right, 180 = toward earth (down)
+  // On screen: +u is up (toward moon), +v is right
+  // atan2(horizontal, vertical) where vertical is inverted for screen coords
+  const headingDeg = Math.round(Math.atan2(vv, vu) * (180 / Math.PI));
+
+  return { u, v, headingDeg };
 }
 
 function toMapCoords(u, v, moonU) {
@@ -127,16 +144,25 @@ async function main() {
   );
 
   // 2D projection: Earth-Moon axis = vertical, perpendicular = horizontal
-  const craftProj = projectToPlane(craft, moon);
+  const craftProj = projectToPlane(
+    craft,
+    { vx: craft.vx, vy: craft.vy, vz: craft.vz },
+    moon,
+  );
   const moonU = magnitude(moon);
   const craftMap = toMapCoords(craftProj.u, craftProj.v, moonU);
 
   const craftXPct = Math.round((craftMap.mapX / MAP_W) * 100);
   const craftYPct = Math.round((craftMap.mapY / MAP_H) * 100);
 
+  // Heading: 0=toward moon, CSS rotation needs adjustment since
+  // the capsule shape points up by default, and screen Y is inverted
+  const craftHeadingDeg = -craftProj.headingDeg;
+
   const mergeVars = {
     craft_x_pct: craftXPct,
     craft_y_pct: craftYPct,
+    craft_heading_deg: craftHeadingDeg,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),

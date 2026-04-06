@@ -1,9 +1,14 @@
 <style>
   .map { position: relative; width: 420px; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); }
-  .map-craft-label { position: absolute; left: 20px; top: -4px; white-space: nowrap; }
+  .map-craft-label { position: absolute; left: 22px; top: -2px; white-space: nowrap; }
   .circle { border-radius: 9999px; }
-  .craft-dot { border: 3px solid black; }
+  .capsule {
+    width: 16px;
+    height: 20px;
+    background: black;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+  }
 </style>
 
 <div class="layout layout--row gap--medium">
@@ -15,9 +20,9 @@
       <span class="label label--small">Moon</span>
     </div>
 
-    <!-- Spacecraft (only element needing absolute positioning) -->
-    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
-      <div class="circle craft-dot bg--white w--3 h--3"></div>
+    <!-- Spacecraft -->
+    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; rotate: {{ craft_heading_deg }}deg;">
+      <div class="capsule"></div>
       <span class="label label--small map-craft-label">Orion</span>
     </div>
 

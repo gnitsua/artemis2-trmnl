@@ -2,7 +2,12 @@
   .map { position: relative; height: 140px; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); }
   .circle { border-radius: 9999px; }
-  .craft-dot { border: 2px solid black; }
+  .capsule {
+    width: 10px;
+    height: 14px;
+    background: black;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+  }
 </style>
 
 <div class="layout layout--col layout--center-x gap--xsmall">
@@ -11,9 +16,9 @@
     <!-- Moon (top) -->
     <div class="circle bg--black w--3.5 h--3.5 mt--xsmall"></div>
 
-    <!-- Spacecraft (absolute, only element that needs it) -->
-    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
-      <div class="circle craft-dot bg--white w--2 h--2"></div>
+    <!-- Spacecraft -->
+    <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%; rotate: {{ craft_heading_deg }}deg;">
+      <div class="capsule"></div>
     </div>
 
     <!-- Earth (bottom) -->
