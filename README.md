@@ -4,7 +4,6 @@ Tracks the Artemis II spacecraft position on a [TRMNL](https://usetrmnl.com) e-i
 
 <img width="812" height="491" alt="image" src="https://github.com/user-attachments/assets/79560b59-37aa-4f0e-a7e6-82b147a4c328" />
 
-
 ## How it works
 
 1. A GitHub Actions cron job runs `update.js` every 15 minutes
@@ -28,6 +27,24 @@ https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.
 | `plugin_half_horizontal.html` | Half Horizontal | 800x240 | Side-by-side map and stats, compact  |
 | `plugin_quadrant.html`        | Quadrant        | 400x240 | Minimal map with small stats         |
 
+## Browser version
+
+Open `index.html` in a browser to see a live web version. It fetches position data from the GitHub-hosted `data/position.json` and refreshes every 60 seconds.
+
+## Testing
+
+Open `test.html` in a browser to play back the full mission trajectory. It includes 1849 pre-computed frames (5-minute intervals) covering ~154 hours from TLI to return. Features:
+
+- **Play/Pause** with 1x, 5x, 20x, 60x speed controls
+- **Scrubber** to jump to any point in the mission
+- **Trail dots** showing the recent flight path
+
+To regenerate test data from JPL Horizons ephemeris files:
+
+```bash
+node generate_test_data.js
+```
+
 ## Setup
 
 ### 1. Create a TRMNL private plugin
@@ -42,14 +59,6 @@ https://raw.githubusercontent.com/gnitsua/artemis2-trmnl/mainline/data/position.
 Fork this repo and enable GitHub Actions. The cron runs automatically every 15 minutes. You can also trigger it manually from the Actions tab.
 
 No secrets or API keys are needed — the workflow fetches from the public JPL Horizons API and commits the result to the repo.
-
-## Local testing
-
-```bash
-node update.js
-```
-
-Fetches current positions from JPL Horizons and writes `data/position.json`.
 
 ## Data source
 
