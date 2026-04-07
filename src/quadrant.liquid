@@ -1,7 +1,7 @@
 <style>
   .map { position: relative; height: 140px; width: 122px; margin: 0 auto; }
   .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); }
-  .map-earth { bottom: 5px; left: 50%; transform: translateX(-50%); }
+  .map-earth { position: absolute; left: 50%; top: 81%; transform: translate(-50%, -50%); }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
   .trail-dot { position: absolute; width: 1px; height: 1px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); z-index: 2; }
   .circle { border-radius: 9999px; }
@@ -40,7 +40,7 @@
     </div>
 
     <!-- Earth -->
-    <div class="map-earth" style="position: absolute;">
+    <div class="map-earth">
       <div class="circle bg--black w--7 h--7"></div>
     </div>
   </div>
