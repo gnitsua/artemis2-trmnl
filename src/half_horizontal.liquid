@@ -20,7 +20,7 @@
   }
 </style>
 
-<div class="layout layout--row gap--medium">
+<div class="layout layout--row layout--center gap--medium">
   <!-- LEFT: Map area -->
   <div class="map h--full">
     <!-- Moon -->
@@ -49,18 +49,18 @@
 
   <!-- RIGHT: Stats -->
   <div class="flex flex--col flex--center-y gap--small grow">
-    <span class="title">Artemis II</span>
+    <span class="title lg:title--large">Artemis II</span>
 
     <div class="flex flex--row gap--large">
       <div class="flex flex--col gap--xsmall">
-        <span class="label label--small label--base">Earth</span>
-        <span class="value">{{ distance_earth_km }}</span>
-        <span class="label label--small">km</span>
+        <span class="label label--small label--base lg:label--large">Earth</span>
+        <span class="value lg:value--large">{{ distance_earth_km }}</span>
+        <span class="label label--small lg:label--base">km</span>
       </div>
       <div class="flex flex--col gap--xsmall">
-        <span class="label label--small label--base">Moon</span>
-        <span class="value">{{ distance_moon_km }}</span>
-        <span class="label label--small">km</span>
+        <span class="label label--small label--base lg:label--large">Moon</span>
+        <span class="value lg:value--large">{{ distance_moon_km }}</span>
+        <span class="label label--small lg:label--base">km</span>
       </div>
     </div>
 
