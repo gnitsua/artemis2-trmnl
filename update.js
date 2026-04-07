@@ -89,9 +89,9 @@ function projectToPlane(pos, vel, moon) {
   const perpZ = pos.z - u * e1.z;
   const perpMag = Math.sqrt(perpX ** 2 + perpY ** 2 + perpZ ** 2);
 
-  // Sign via cross product (negated to match visual convention: left of Moon = negative x)
+  // Sign via cross product
   const cross = e1.x * perpY - e1.y * perpX;
-  const v = cross >= 0 ? -perpMag : perpMag;
+  const v = cross >= 0 ? perpMag : -perpMag;
 
   // Project velocity onto same 2D plane for heading
   const vu = vel.vx * e1.x + vel.vy * e1.y + vel.vz * e1.z;
@@ -101,7 +101,7 @@ function projectToPlane(pos, vel, moon) {
     vPerpX ** 2 + vPerpY ** 2 + (vel.vz - vu * e1.z) ** 2,
   );
   const vCross = e1.x * vPerpY - e1.y * vPerpX;
-  const vv = vCross >= 0 ? -vPerpMag : vPerpMag;
+  const vv = vCross >= 0 ? vPerpMag : -vPerpMag;
 
   // Heading in degrees: 0 = toward moon (up), 90 = right, 180 = toward earth (down)
   // On screen: +u is up (toward moon), +v is right
