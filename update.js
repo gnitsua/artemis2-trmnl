@@ -21,7 +21,7 @@ function crossProduct(a, b) {
   return {
     x: a.y * b.z - a.z * b.y,
     y: a.z * b.x - a.x * b.z,
-    z: a.x * b.y - a.y * b.x
+    z: a.x * b.y - a.y * b.x,
   };
 }
 
@@ -103,7 +103,7 @@ function projectToPlane(craftPos, craftVel, moon) {
 
   const u = dotProduct(craftPos, uHat);
   const v = dotProduct(craftPos, vHat);
-  
+
   const vu = dotProduct(craftVel, uHat);
   const vv = dotProduct(craftVel, vHat);
   const headingDeg = Math.round(Math.atan2(vv, vu) * (180 / Math.PI));
@@ -126,8 +126,9 @@ function toMapCoords(u, v, maxU) {
 }
 
 async function fetchTrail(craftId, moonId) {
-  const start = "2026-04-03T00:00:00";
-  const end = "2026-04-06T23:00:46"; // Locked to April 6, 2026 at 7:00:46 PM EDT
+  const now = new Date();
+  const start = "2026-04-02T02:00:00"; // Post-TLI (earliest Horizons data)
+  const end = now.toISOString().slice(0, 19);
 
   console.log(`Fetching trail from ${start} to ${end} at 15m steps...`);
   const [craftResp, moonResp] = await Promise.all([
@@ -169,7 +170,7 @@ async function main() {
   const craftProj = projectToPlane(
     craft,
     { x: craft.vx, y: craft.vy, z: craft.vz },
-    moon
+    moon,
   );
   const moonU = magnitude(moon);
   const maxU = Math.max(moonU, craftProj.u) * 0.95;
@@ -188,17 +189,13 @@ async function main() {
   const trail = [];
   for (let i = 0; i < count; i++) {
     const c = craftPoints[i];
-    
-    const proj = projectToPlane(
-      c,
-      { x: c.vx, y: c.vy, z: c.vz },
-      moon
-    );
-    
+
+    const proj = projectToPlane(c, { x: c.vx, y: c.vy, z: c.vz }, moon);
+
     const coords = toMapCoords(proj.u, proj.v, maxU);
     const rawX = (coords.mapX / MAP_W) * 100;
     const rawY = (coords.mapY / MAP_H) * 100;
-    
+
     trail.push({ x: Math.round(rawX), y: Math.round(rawY) });
   }
 
@@ -211,7 +208,8 @@ async function main() {
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),
     progress,
-    updated_at: new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
+    updated_at:
+      new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
     trail,
   };
 
