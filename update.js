@@ -118,7 +118,7 @@ function toMapCoords(u, v, maxU) {
   const vertRange = MAP_H - 2 * PADDING;
   const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
   // Scale v so that percentages of MAP_W match percentages of MAP_H in real km
-  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 0.66;
+  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 2;
   return {
     mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
     mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),
@@ -127,8 +127,7 @@ function toMapCoords(u, v, maxU) {
 
 async function fetchTrail(craftId, moonId) {
   const now = new Date();
-  const past = new Date(now.getTime() - 96 * 15 * 60_000); // 96 * 15min ago
-  const start = past.toISOString().slice(0, 19);
+  const start = "2026-04-02T02:00:00"; // Post-TLI (earliest Horizons data)
   const end = now.toISOString().slice(0, 19);
 
   console.log(`Fetching trail from ${start} to ${end} at 15m steps...`);
@@ -184,57 +183,47 @@ async function main() {
 
   // Enforce minimum separation from Moon (in percentage points)
   // Prevents capsule from visually overlapping the Moon circle
-  const MIN_SEP = 8; // ~32px on a 400px display
-  function separateFromMoon(xPct, yPct) {
-    const dx = xPct - moonXPct;
-    const dy = yPct - moonYPct;
+  const MIN_SEP = 5; // ~20px on a 400px display
+  const earthXPct = 50;
+  const earthYPct = 81; // Earth at u=0 maps to MAP_H - PADDING = 81%
+
+  const EARTH_SEP = 12; // Larger separation for Earth to show departure orbit
+  function separateFromBody(xPct, yPct, bodyX, bodyY, minSep) {
+    const dx = xPct - bodyX;
+    const dy = yPct - bodyY;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < MIN_SEP && dist > 0) {
-      const scale = MIN_SEP / dist;
-      return {
-        x: Math.round(moonXPct + dx * scale),
-        y: Math.round(moonYPct + dy * scale),
-      };
+    if (dist < minSep && dist > 0) {
+      const scale = minSep / dist;
+      return { x: bodyX + dx * scale, y: bodyY + dy * scale };
     }
     if (dist === 0) {
-      // Directly on Moon — push down (toward Earth)
-      return { x: Math.round(xPct), y: Math.round(yPct + MIN_SEP) };
+      return { x: xPct, y: yPct - minSep };
     }
-    return { x: Math.round(xPct), y: Math.round(yPct) };
+    return { x: xPct, y: yPct };
+  }
+
+  function separateFromBodies(xPct, yPct) {
+    let { x, y } = separateFromBody(xPct, yPct, moonXPct, moonYPct, MIN_SEP);
+    ({ x, y } = separateFromBody(x, y, earthXPct, earthYPct, EARTH_SEP));
+    return { x: Math.round(x), y: Math.round(y) };
   }
 
   const craftRaw = {
     x: (craftMap.mapX / MAP_W) * 100,
     y: (craftMap.mapY / MAP_H) * 100,
   };
-  const craftSep = separateFromMoon(craftRaw.x, craftRaw.y);
+  const craftSep = separateFromBodies(craftRaw.x, craftRaw.y);
 
-  // Compute trail from all fetched points using the same scale
+  // Compute trail using the CURRENT Moon position as a fixed reference axis
+  // This prevents axis rotation from distorting the trajectory shape
   const trail = [];
   for (let i = 0; i < count; i++) {
     const c = craftPoints[i];
-    const m = moonPoints[i];
-    const proj = projectToPlane(c, { vx: c.vx, vy: c.vy, vz: c.vz }, m);
-    const mu = magnitude(m);
-    const mu2 = Math.max(mu, proj.u) * 0.95;
-    const coords = toMapCoords(proj.u, proj.v, mu2);
-    const mMap = toMapCoords(mu, 0, mu2);
+    const proj = projectToPlane(c, { vx: c.vx, vy: c.vy, vz: c.vz }, moon);
+    const coords = toMapCoords(proj.u, proj.v, maxU);
     const rawX = (coords.mapX / MAP_W) * 100;
     const rawY = (coords.mapY / MAP_H) * 100;
-    const mY = (mMap.mapY / MAP_H) * 100;
-    // Separate trail points from their contemporaneous Moon position
-    const tdx = rawX - moonXPct;
-    const tdy = rawY - mY;
-    const tdist = Math.sqrt(tdx * tdx + tdy * tdy);
-    if (tdist < MIN_SEP && tdist > 0) {
-      const s = MIN_SEP / tdist;
-      trail.push({
-        x: Math.round(moonXPct + tdx * s),
-        y: Math.round(mY + tdy * s),
-      });
-    } else {
-      trail.push({ x: Math.round(rawX), y: Math.round(rawY) });
-    }
+    trail.push(separateFromBodies(rawX, rawY));
   }
 
   const mergeVars = {

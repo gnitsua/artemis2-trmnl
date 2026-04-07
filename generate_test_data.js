@@ -76,7 +76,7 @@ function projectToPlane(pos, vel, moon) {
 function toMapCoords(u, v, maxU) {
   const vertRange = MAP_H - 2 * PADDING;
   const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
-  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 0.66;
+  const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 2;
   return {
     mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
     mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),

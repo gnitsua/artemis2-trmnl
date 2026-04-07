@@ -3,8 +3,7 @@
   .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); }
   .map-earth { bottom: 10px; left: 50%; transform: translateX(-50%); }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
-  .trail-dot { position: absolute; width: 2px; height: 2px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); opacity: 0.2; z-index: 2; }
-  .bit-1 .trail-dot { opacity: 1; }
+  .trail-dot { position: absolute; width: 1px; height: 1px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); z-index: 2; }
   .circle { border-radius: 9999px; }
   .capsule-wrap {
     filter:
@@ -14,8 +13,8 @@
       drop-shadow(1px -1px 0 white) drop-shadow(-1px -1px 0 white);
   }
   .capsule {
-    width: 12px;
-    height: 12px;
+    width: 6px;
+    height: 6px;
     background: black;
     clip-path: polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%);
   }
@@ -26,15 +25,15 @@
   <div class="map h--full">
     <!-- Moon -->
     <div class="map-body" style="top: {{ moon_y_pct }}%;">
-      <div class="circle bg--black w--5 h--5"></div>
+      <div class="circle bg--black w--2.5 h--2.5"></div>
       <span class="label label--small" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
     </div>
 
     <!-- Trail -->
     {% for point in trail %}
-      <div class="trail-dot" style="left: {{ point.x }}%; top: {{ point.y }}%;"></div>
+      <div class="trail-dot 1bit:bg--black 2bit:bg--gray-50 4bit:bg--gray-50" style="left: {{ point.x }}%; top: {{ point.y }}%;"></div>
     {% endfor %}
-    <div class="trail-dot" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;"></div>
+    <div class="trail-dot 1bit:bg--black 2bit:bg--gray-50 4bit:bg--gray-50" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;"></div>
 
     <!-- Spacecraft -->
     <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
