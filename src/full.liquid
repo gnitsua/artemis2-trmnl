@@ -66,6 +66,6 @@
       <span class="label label--small lg:label--large">km</span>
     </div>
 
-    <span class="label label--small label--inverted">{{ updated_at }}</span>
+    <span class="label label--small label--inverted">{{ updated_at | date: "%s" | plus: trmnl.user.utc_offset | date: "%Y-%m-%d %H:%M" }}</span>
   </div>
 </div>

@@ -235,8 +235,7 @@ async function main() {
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),
     progress,
-    updated_at:
-      new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
+    updated_at: new Date().toISOString(),
     trail,
   };
 
