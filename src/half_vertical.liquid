@@ -1,7 +1,8 @@
 <style>
   .map { position: relative; height: 280px; width: 244px; margin: 0 auto; }
-  .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); }
-  .map-earth { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); z-index: 3; }
+  .map-earth { position: absolute; left: 50%; top: 81%; transform: translate(-50%, -50%); z-index: 3; }
+  .body-bg { background: white; padding: 0 2px; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
   .trail-dot { position: absolute; width: 1px; height: 1px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); z-index: 2; }
   .circle { border-radius: 9999px; }
@@ -26,7 +27,7 @@
     <!-- Moon -->
     <div class="map-body" style="top: {{ moon_y_pct }}%;">
       <div class="circle bg--black w--2.5 h--2.5"></div>
-      <span class="label label--small" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
+      <span class="label label--small body-bg" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Moon</span>
     </div>
 
     <!-- Trail -->
@@ -41,9 +42,9 @@
     </div>
 
     <!-- Earth -->
-    <div class="map-earth" style="position: absolute;">
+    <div class="map-earth">
       <div class="circle bg--black w--10 h--10"></div>
-      <span class="label label--small" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
+      <span class="label label--small body-bg" style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap;">Earth</span>
     </div>
   </div>
 
