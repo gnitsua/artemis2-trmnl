@@ -129,10 +129,9 @@ function toMapCoords(u, v, maxU) {
   const mapY = MAP_H - PADDING - (u / maxU) * vertRange;
   // Scale v so that percentages of MAP_W match percentages of MAP_H in real km
   const mapX = MAP_W / 2 + (v / maxU) * vertRange * (MAP_H / MAP_W) * 2;
-  return {
-    mapX: Math.max(20, Math.min(MAP_W - 20, mapX)),
-    mapY: Math.max(20, Math.min(MAP_H - 20, mapY)),
-  };
+  const clamped =
+    mapX < 20 || mapX > MAP_W - 20 || mapY < 20 || mapY > MAP_H - 20;
+  return { mapX, mapY, clamped };
 }
 
 async function fetchTrail(craftId, moonId) {
@@ -213,10 +212,12 @@ async function main() {
     const proj = projectToPlane(c, { x: c.vx, y: c.vy, z: c.vz }, moon);
 
     const coords = toMapCoords(proj.u, proj.v, maxU);
-    const rawX = (coords.mapX / MAP_W) * 100;
-    const rawY = (coords.mapY / MAP_H) * 100;
-
-    trail.push({ x: Math.round(rawX), y: Math.round(rawY) });
+    if (!coords.clamped) {
+      trail.push({
+        x: Math.round((coords.mapX / MAP_W) * 100),
+        y: Math.round((coords.mapY / MAP_H) * 100),
+      });
+    }
   }
 
   const mergeVars = {
