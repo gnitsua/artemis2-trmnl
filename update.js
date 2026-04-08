@@ -8,6 +8,16 @@ const HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api";
 const ARTEMIS_ID = "-1024";
 const MOON_ID = "301";
 
+// Moon position at flyby closest approach: 2026-Apr-06 23:00:46 UTC (7:00:46 PM EDT)
+const FLYBY_MOON = {
+  x: -1.293979940594494e+05,
+  y: -3.819219041342842e+05,
+  z: -3.634316759687522e+04,
+  vx: 9.153482337016318e-01,
+  vy: -3.160059812754620e-01,
+  vz: 4.759168309282566e-03,
+};
+
 // Map layout constants matching the plugin template (pixels)
 const MAP_W = 420;
 const MAP_H = 480;
@@ -185,6 +195,16 @@ async function main() {
     y: (craftMap.mapY / MAP_H) * 100,
   };
 
+  // Project the flyby moon position onto the 2D map
+  const flybyProj = projectToPlane(
+    FLYBY_MOON,
+    { x: FLYBY_MOON.vx, y: FLYBY_MOON.vy, z: FLYBY_MOON.vz },
+    moon,
+  );
+  const flybyCoords = toMapCoords(flybyProj.u, flybyProj.v, maxU);
+  const flybyMoonXPct = Math.round((flybyCoords.mapX / MAP_W) * 100);
+  const flybyMoonYPct = Math.round((flybyCoords.mapY / MAP_H) * 100);
+
   // Compute trail in the inertial reference frame
   const trail = [];
   for (let i = 0; i < count; i++) {
@@ -204,6 +224,8 @@ async function main() {
     craft_y_pct: Math.round(craftRaw.y),
     craft_heading_deg: craftHeadingDeg,
     moon_y_pct: moonYPct,
+    flyby_moon_x_pct: flybyMoonXPct,
+    flyby_moon_y_pct: flybyMoonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
     distance_moon_km: Math.round(distMoon).toLocaleString("en-US"),
     speed_kmh: speedKmh.toLocaleString("en-US"),

@@ -34,6 +34,11 @@
     {% endfor %}
     <div class="trail-dot 1bit:bg--black 2bit:bg--gray-50 4bit:bg--gray-50" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;"></div>
 
+    <!-- Flyby Moon (where the moon was at closest approach) -->
+    <div style="position: absolute; left: {{ flyby_moon_x_pct }}%; top: {{ flyby_moon_y_pct }}%; transform: translate(-50%, -50%); z-index: 0;">
+      <div style="width: 4px; height: 4px; border-radius: 9999px; border: 1px dashed black;"></div>
+    </div>
+
     <!-- Spacecraft -->
     <div class="map-craft" style="left: {{ craft_x_pct }}%; top: {{ craft_y_pct }}%;">
       <div class="capsule-wrap" style="rotate: {{ craft_heading_deg }}deg;"><div class="capsule"></div></div>
