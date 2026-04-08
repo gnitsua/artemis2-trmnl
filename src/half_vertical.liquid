@@ -1,6 +1,6 @@
 <style>
   .map { position: relative; height: 280px; width: 244px; margin: 0 auto; }
-  .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); z-index: 0; }
+  .map-body { position: absolute; transform: translate(-50%, -50%); z-index: 0; }
   .map-earth { position: absolute; left: 50%; top: 81%; transform: translate(-50%, -50%); z-index: 0; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
   .trail-dot { position: absolute; width: 1px; height: 1px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); z-index: 2; }
@@ -24,7 +24,7 @@
   <!-- Map area -->
   <div class="map w--full">
     <!-- Moon -->
-    <div class="map-body" style="top: {{ moon_y_pct }}%;">
+    <div class="map-body" style="left: {{ moon_x_pct }}%; top: {{ moon_y_pct }}%;">
       <div class="circle bg--black w--1.5 h--1.5"></div>
 
     </div>

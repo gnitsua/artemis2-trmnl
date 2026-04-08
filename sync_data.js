@@ -20,6 +20,7 @@ variables:
   craft_y_pct: ${data.craft_y_pct}
   craft_heading_deg: ${data.craft_heading_deg}
   moon_y_pct: ${data.moon_y_pct}
+  moon_x_pct: ${data.moon_x_pct}
   flyby_moon_x_pct: ${data.flyby_moon_x_pct}
   flyby_moon_y_pct: ${data.flyby_moon_y_pct}
   distance_earth_km: "${data.distance_earth_km}"

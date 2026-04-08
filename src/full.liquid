@@ -1,6 +1,6 @@
 <style>
   .map { position: relative; width: 420px; }
-  .map-body { position: absolute; left: 50%; transform: translate(-50%, -50%); z-index: 0; }
+  .map-body { position: absolute; transform: translate(-50%, -50%); z-index: 0; }
   .map-earth { position: absolute; left: 50%; top: 81%; transform: translate(-50%, -50%); z-index: 0; }
   .map-craft { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
   .trail-dot { position: absolute; width: 2px; height: 2px; border-radius: 9999px; background: black; transform: translate(-50%, -50%); }
@@ -25,7 +25,7 @@
   <div class="map h--full">
 
     <!-- Moon (dynamic y position) -->
-    <div class="map-body map-moon" style="top: {{ moon_y_pct }}%;">
+    <div class="map-body map-moon" style="left: {{ moon_x_pct }}%; top: {{ moon_y_pct }}%;">
       <div class="circle bg--black w--2 h--2"></div>
 
     </div>

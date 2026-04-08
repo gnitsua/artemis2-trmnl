@@ -22,6 +22,7 @@ const FLYBY_MOON = {
 const MAP_W = 420;
 const MAP_H = 480;
 const PADDING = 90;
+const PLOT_ROTATION_DEG = 15; // Rotate plot so return trajectory stays on-screen
 
 function dotProduct(a, b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
@@ -121,6 +122,14 @@ function projectToPlane(craftPos, craftVel, moon) {
   return { u, v, headingDeg };
 }
 
+function rotate2D(u, v, deg) {
+  const rad = deg * (Math.PI / 180);
+  return {
+    u: u * Math.cos(rad) - v * Math.sin(rad),
+    v: u * Math.sin(rad) + v * Math.cos(rad),
+  };
+}
+
 function toMapCoords(u, v, maxU) {
   // Use the same km-per-percent ratio for both axes
   // Vertical: usable range = MAP_H - 2*PADDING, percentage base = MAP_H
@@ -182,12 +191,37 @@ async function main() {
     moon,
   );
   const moonU = magnitude(moon);
-  const maxU = Math.max(moonU, craftProj.u) * 0.95;
-  const craftMap = toMapCoords(craftProj.u, craftProj.v, maxU);
-  const moonMap = toMapCoords(moonU, 0, maxU);
+  // Project all points first to find the full extent
+  const allProjs = craftPoints.slice(0, count).map((c) =>
+    projectToPlane(c, { x: c.vx, y: c.vy, z: c.vz }, moon)
+  );
+  const flybyProj = projectToPlane(
+    FLYBY_MOON,
+    { x: FLYBY_MOON.vx, y: FLYBY_MOON.vy, z: FLYBY_MOON.vz },
+    moon,
+  );
+  // maxU must be large enough for both vertical (u) and horizontal (v) to fit after rotation
+  const allRotated = allProjs.map((p) => rotate2D(p.u, p.v, PLOT_ROTATION_DEG));
+  const rotFlybyForFit = rotate2D(flybyProj.u, flybyProj.v, PLOT_ROTATION_DEG);
+  const rotMoonForFit = rotate2D(moonU, 0, PLOT_ROTATION_DEG);
+  const maxRotU = Math.max(...allRotated.map((p) => p.u), rotFlybyForFit.u, rotMoonForFit.u);
+  const maxRotV = Math.max(...allRotated.map((p) => Math.abs(p.v)), Math.abs(rotFlybyForFit.v), Math.abs(rotMoonForFit.v));
+  const vertRange = MAP_H - 2 * PADDING;
+  const hScale = vertRange * (MAP_H / MAP_W) * 2;
+  const maxUForH = maxRotV * hScale / (MAP_W / 2 - 20);
+  const maxU = Math.max(maxRotU, maxUForH) * 1.05;
 
+  // Apply rotation to all projected coordinates
+  const rotCraft = rotate2D(craftProj.u, craftProj.v, PLOT_ROTATION_DEG);
+  const rotMoon = rotate2D(moonU, 0, PLOT_ROTATION_DEG);
+  const rotFlyby = rotate2D(flybyProj.u, flybyProj.v, PLOT_ROTATION_DEG);
+
+  const craftMap = toMapCoords(rotCraft.u, rotCraft.v, maxU);
+  const moonMap = toMapCoords(rotMoon.u, rotMoon.v, maxU);
+
+  const moonXPct = Math.round((moonMap.mapX / MAP_W) * 100);
   const moonYPct = Math.round((moonMap.mapY / MAP_H) * 100);
-  const craftHeadingDeg = 180 - craftProj.headingDeg;
+  const craftHeadingDeg = 180 - craftProj.headingDeg + PLOT_ROTATION_DEG;
 
   const craftRaw = {
     x: (craftMap.mapX / MAP_W) * 100,
@@ -195,12 +229,7 @@ async function main() {
   };
 
   // Project the flyby moon position onto the 2D map
-  const flybyProj = projectToPlane(
-    FLYBY_MOON,
-    { x: FLYBY_MOON.vx, y: FLYBY_MOON.vy, z: FLYBY_MOON.vz },
-    moon,
-  );
-  const flybyCoords = toMapCoords(flybyProj.u, flybyProj.v, maxU);
+  const flybyCoords = toMapCoords(rotFlyby.u, rotFlyby.v, maxU);
   const flybyMoonXPct = Math.round((flybyCoords.mapX / MAP_W) * 100);
   const flybyMoonYPct = Math.round((flybyCoords.mapY / MAP_H) * 100);
 
@@ -210,14 +239,13 @@ async function main() {
     const c = craftPoints[i];
 
     const proj = projectToPlane(c, { x: c.vx, y: c.vy, z: c.vz }, moon);
+    const rot = rotate2D(proj.u, proj.v, PLOT_ROTATION_DEG);
 
-    const coords = toMapCoords(proj.u, proj.v, maxU);
-    if (!coords.clamped) {
-      trail.push({
-        x: Math.round((coords.mapX / MAP_W) * 100),
-        y: Math.round((coords.mapY / MAP_H) * 100),
-      });
-    }
+    const coords = toMapCoords(rot.u, rot.v, maxU);
+    const rawX = (coords.mapX / MAP_W) * 100;
+    const rawY = (coords.mapY / MAP_H) * 100;
+
+    trail.push({ x: Math.round(rawX), y: Math.round(rawY) });
   }
 
   const mergeVars = {
@@ -225,6 +253,7 @@ async function main() {
     craft_y_pct: Math.round(craftRaw.y),
     craft_heading_deg: craftHeadingDeg,
     moon_y_pct: moonYPct,
+    moon_x_pct: moonXPct,
     flyby_moon_x_pct: flybyMoonXPct,
     flyby_moon_y_pct: flybyMoonYPct,
     distance_earth_km: Math.round(distEarth).toLocaleString("en-US"),
