@@ -6,11 +6,11 @@
   "moon_x_pct": 69,
   "flyby_moon_x_pct": 8,
   "flyby_moon_y_pct": 57,
-  "distance_earth_km": "8,343",
-  "distance_moon_km": "394,302",
+  "distance_earth_km": "0",
+  "distance_moon_km": "384,400",
   "speed_kmh": "34,876",
   "progress": 2,
-  "updated_at": "2026-04-10 23:49 UTC",
+  "updated_at": "2026-04-11 03:14 UTC",
   "trail": [
     {
       "x": 45,
